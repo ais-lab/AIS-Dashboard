@@ -1,0 +1,21 @@
+{
+  "name": "gheplienquan",
+  "short_name": "gheplienquan",
+  "description": "Tool ghép ảnh liên quân tốt nhất hiện nay",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e1a24",
+  "theme_color": "#1e1a24",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

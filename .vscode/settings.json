@@ -1,0 +1,11 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "css.customData": [
+    ".vscode/tailwind.json"
+  ],
+  "scss.lint.unknownAtRules": "ignore",
+  "[svg]": {
+    "editor.defaultFormatter": "jock.svg"
+  }
+}
