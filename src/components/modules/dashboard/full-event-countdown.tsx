@@ -4,6 +4,7 @@ import SlotCounter from "react-slot-counter"
 
 import { BaseDisplayItem } from "@/types/models"
 import dayjsConfig from "@/config/dayjs"
+import { duration } from "@/lib/utils/duration"
 import { Icons } from "@/components/common/icons"
 import IosLoadingSpinner from "@/components/common/ios-loading-spinner"
 
@@ -22,6 +23,7 @@ const timeUnitMap: { [key: string]: string } = {
 const FullEventCountdown = ({ displayItem }: Props) => {
   const { data: event, isLoading: isEventLoading } = useCountDownEvent({
     displayItem,
+    refetchInterval: duration.seconds(40),
   })
   const [timeLeft, setTimeLeft] = useState({
     months: 0,

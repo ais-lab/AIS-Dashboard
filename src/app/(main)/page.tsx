@@ -14,7 +14,7 @@ import FullEventCountdown from "@/components/modules/dashboard/full-event-countd
 export default function MainPage() {
   const { data: displayItems, isLoading: isDisplayItemsLoading } =
     useDisplayItems({
-      refetchInterval: duration.seconds(40),
+      refetchInterval: duration.seconds(30),
     })
 
   const firstEvent = displayItems?.find((item) => item.type === "event")
