@@ -5,7 +5,6 @@ import dynamic from "next/dynamic"
 
 import { env } from "@/env.mjs"
 import { ReactQueryClientProvider } from "@/components/export/ReactQueryClientProvider"
-import AuthFooter from "@/components/modules/auth/auth-footer"
 
 const ReactQueryDevtoolsProduction = dynamic(
   () =>
