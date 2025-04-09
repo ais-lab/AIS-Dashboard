@@ -9,8 +9,6 @@ import updateLocate from "dayjs/plugin/updateLocale"
 import utc from "dayjs/plugin/utc"
 import weekday from "dayjs/plugin/weekday"
 
-import "dayjs/locale/vi"
-
 dayjs.extend(advanced)
 dayjs.extend(customParseFormat)
 dayjs.extend(weekday)
@@ -40,26 +38,6 @@ const config = {
 dayjs.extend(relativeTime, config)
 
 dayjs.extend(updateLocate)
-dayjs.updateLocale("vi", {
-  relativeTime: {
-    future: "%s nữa",
-    past: "%s trước",
-    s: "vài giây",
-    ss: "%d giây",
-    m: "một phút",
-    mm: "%d phút",
-    h: "một giờ",
-    hh: "%d giờ",
-    d: "một ngày",
-    dd: "%d ngày",
-    M: "một tháng",
-    MM: "%d tháng",
-    y: "một năm",
-    yy: "%d năm",
-  },
-})
-
-dayjs.locale("vi")
 
 export const DAYJS_CONSTANT_DEFAULT = {
   timezone: dayjs.tz.guess(),

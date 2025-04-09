@@ -20,6 +20,10 @@ const MainApiPath = {
     uploadUrl: () => `${MainApiPath.files.default}/upload-url`,
     meta: () => `${MainApiPath.files.default}/meta`,
   },
+  gdrive: {
+    default: "gdrive",
+    json: () => `${MainApiPath.gdrive.default}/json`,
+  },
 } as const
 
 export default MainApiPath

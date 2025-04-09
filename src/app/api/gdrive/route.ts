@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { google } from "googleapis"
 
-import { env } from "@/env.mjs"
+import { googleDrive } from "@/lib/firebase/drive"
 
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams
@@ -13,21 +12,9 @@ export async function GET(request: NextRequest) {
       { status: 400 }
     )
   }
-
-  const auth = new google.auth.GoogleAuth({
-    scopes: "https://www.googleapis.com/auth/drive",
-    projectId: env.DRIVE_PROJECT_ID,
-    credentials: {
-      client_id: env.DRIVE_CLIENT_ID,
-      client_email: env.DRIVE_CLIENT_EMAIL,
-      private_key: env.DRIVE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    },
-  })
-
-  const drive = google.drive({ version: "v3", auth })
-  const response = await drive.files.list({
+  const response = await googleDrive.files.list({
     q: `'${folderId}' in parents`,
-    fields: "files(id, name, mimeType, webViewLink)",
+    fields: "files(id, name, mimeType)",
   })
   const files = response.data.files
   if (!files || files.length === 0) {

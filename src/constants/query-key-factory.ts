@@ -15,8 +15,13 @@ export const fileKeys = {
   blob: (url: string) => [...fileKeys.details(url), "blob"],
 } as const
 
-
 export const priceKeys = {
   price: ["price"],
   details: (id: string) => [...priceKeys.price, id],
+} as const
+
+export const displayItemKeys = {
+  displayItems: ["displayItems"],
+  all: () => [...displayItemKeys.displayItems],
+  event: (fileId: string) => [...displayItemKeys.displayItems, "event", fileId],
 } as const

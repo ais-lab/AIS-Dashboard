@@ -1,7 +1,7 @@
 "use client"
 
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister"
-import { QueryClient } from "@tanstack/react-query"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import {
   persistQueryClient,
   PersistQueryClientProvider,
@@ -41,13 +41,13 @@ export const ReactQueryClientProvider = ({
   children: React.ReactNode
 }) => {
   return (
-    <PersistQueryClientProvider
+    <QueryClientProvider
       client={queryClient}
-      persistOptions={{
-        persister,
-      }}
+      // persistOptions={{
+      //   persister,
+      // }}
     >
       {children}
-    </PersistQueryClientProvider>
+    </QueryClientProvider>
   )
 }

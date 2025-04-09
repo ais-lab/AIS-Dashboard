@@ -1,3 +1,19 @@
+export interface BaseDisplayItem {
+  from: string
+  fileName: string
+  fileId: string
+  to: string
+  type: "event" | "image" | "text"
+}
+
+export interface CountdownEvent {
+  name: string
+  date: string
+  address?: string
+  note?: string
+  description?: string
+}
+
 export const runDurations = [
   "1-month",
   "3-month",
