@@ -51,10 +51,5 @@ const nextConfig = {
 
 const withBundleAnalyzer = require("@next/bundle-analyzer")()
 
-const withPWA = require("next-pwa")({
-  dest: "public",
-})
-
-module.exports = withPWA(
+module.exports =
   process.env.ANALYZE === "true" ? withBundleAnalyzer(nextConfig) : nextConfig
-)

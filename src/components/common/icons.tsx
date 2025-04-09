@@ -1,3 +1,5 @@
+import AppIcon from "@assets/svgs/icon.svg"
+import Telegram from "@assets/svgs/telegram.svg"
 import {
   AlertCircle,
   AlertTriangle,
@@ -25,6 +27,7 @@ import {
   Film,
   Filter,
   FolderOpen,
+  Fullscreen,
   Image,
   Images,
   Info,
@@ -55,9 +58,6 @@ import {
   View,
   XCircle,
 } from "lucide-react"
-
-import Telegram from "@assets/svgs/telegram.svg"
-import AppIcon from "@assets/svgs/icon.svg"
 
 export type IconKeys = keyof typeof icons
 
@@ -122,6 +122,7 @@ const icons = {
   images: Images,
   badgeMinus: BadgeMinus,
   telegram: Telegram,
+  fullScreen: Fullscreen,
 }
 
 export const Icons: IconsType = icons

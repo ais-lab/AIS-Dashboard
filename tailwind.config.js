@@ -56,7 +56,7 @@ module.exports = {
         80: "320px",
         96: "384px",
         "8xl": "96rem",
-        "9xl": "128rem",
+        "9xl": "132rem",
       },
       transitionDuration: {
         2000: "2000ms",

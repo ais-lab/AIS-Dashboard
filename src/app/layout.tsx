@@ -1,18 +1,13 @@
 import "@/styles/globals.css"
 
 import type { Metadata, Viewport } from "next"
-import dynamic from "next/dynamic"
 import { Inter } from "next/font/google"
-import { GoogleTagManager } from "@next/third-parties/google"
 
 import { siteConfig } from "@/config/site"
 import { cn } from "@/lib/utils"
 import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from "@/components/common/theme-provider"
 
-const CrispWithNoSSR = dynamic(() => import("../components/common/crisp"), {
-  ssr: false,
-})
 const inter = Inter({
   subsets: ["latin"],
 })
@@ -38,7 +33,7 @@ export const metadata: Metadata = {
   creator: siteConfig.author,
   openGraph: {
     type: "website",
-    locale: "vi_VN",
+    locale: "en_US",
     url: siteConfig.url.base,
     title: siteConfig.name,
     description: siteConfig.description,
@@ -67,9 +62,6 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="vi" translate="no" suppressHydrationWarning>
-      <GoogleTagManager gtmId="G-ZHZG0X3872" />
-      <CrispWithNoSSR />
-
       <body
         className={cn(
           "min-h-screen bg-background antialiased",

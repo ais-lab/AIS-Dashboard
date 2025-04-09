@@ -13,9 +13,10 @@ export const env = createEnv({
     NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: z.string().min(1),
     NEXT_PUBLIC_FIREBASE_APP_ID: z.string().min(1),
     NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: z.string().optional(),
-    ADMIN_PROJECT_ID: z.string().optional(),
-    ADMIN_PRIVATE_KEY: z.string().optional(),
-    ADMIN_CLIENT_EMAIL: z.string().optional(),
+    DRIVE_PROJECT_ID: z.string().optional(),
+    DRIVE_PRIVATE_KEY: z.string().optional(),
+    DRIVE_CLIENT_EMAIL: z.string().optional(),
+    DRIVE_CLIENT_ID: z.string().optional(),
     NEXT_PUBLIC_WORKER_BASE_URL: z.string().optional(),
   },
   runtimeEnv: {
@@ -34,9 +35,10 @@ export const env = createEnv({
     NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
     NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID:
       process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-    ADMIN_PROJECT_ID: process.env.ADMIN_PROJECT_ID || '',
-    ADMIN_PRIVATE_KEY: process.env.ADMIN_PRIVATE_KEY || '',
-    ADMIN_CLIENT_EMAIL: process.env.ADMIN_CLIENT_EMAIL || '',
-    NEXT_PUBLIC_WORKER_BASE_URL: process.env.NEXT_PUBLIC_WORKER_BASE_URL || '',
+    DRIVE_PROJECT_ID: process.env.DRIVE_PROJECT_ID || "",
+    DRIVE_PRIVATE_KEY: process.env.DRIVE_PRIVATE_KEY || "",
+    DRIVE_CLIENT_EMAIL: process.env.DRIVE_CLIENT_EMAIL || "",
+    DRIVE_CLIENT_ID: process.env.DRIVE_CLIENT_ID || "",
+    NEXT_PUBLIC_WORKER_BASE_URL: process.env.NEXT_PUBLIC_WORKER_BASE_URL || "",
   },
 })
