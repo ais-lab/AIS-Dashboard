@@ -117,6 +117,12 @@ const getDisplayItems = async () => {
     if (!from || !to) {
       continue
     }
+    if (from > to) {
+      continue
+    }
+    if (from > new Date().toISOString() || to < new Date().toISOString()) {
+      continue
+    }
     items.push({
       fileId: id,
       fileName: file.name,

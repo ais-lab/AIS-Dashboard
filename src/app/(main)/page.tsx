@@ -3,29 +3,52 @@
 import React from "react"
 import { useDisplayItems } from "@/apis/gdrive/use-display-items"
 
+import { env } from "@/env.mjs"
 import { siteConfig } from "@/config/site"
+import { cn } from "@/lib/utils"
 import { duration } from "@/lib/utils/duration"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Icons } from "@/components/common/icons"
 import LoadingPage from "@/components/layouts/loading"
-import FullEventCountdown from "@/components/modules/dashboard/full-event-countdown"
+import EventCountdown from "@/components/modules/dashboard/event-countdown"
+import Slideshow from "@/components/modules/dashboard/slideshow"
 
 export default function MainPage() {
   const { data: displayItems, isLoading: isDisplayItemsLoading } =
     useDisplayItems({
-      refetchInterval: duration.seconds(30),
+      refetchInterval: duration.seconds(25),
     })
 
   const firstEvent = displayItems?.find((item) => item.type === "event")
+
+  const slideShowItems = displayItems?.filter((item) => item.type !== "event")
+  const hasSlideShowItems = slideShowItems && slideShowItems.length > 0
 
   if (isDisplayItemsLoading) return <LoadingPage />
 
   return (
     <div className="mx-auto flex h-screen w-screen flex-col">
-      {firstEvent && <FullEventCountdown displayItem={firstEvent} />}
-      <div className="flex items-end justify-center py-8">
-        <Label className="text-center text-sm text-muted-foreground">
+      {firstEvent ? (
+        <EventCountdown
+          displayItem={firstEvent}
+          type={hasSlideShowItems ? "normal" : "fullscreen"}
+        />
+      ) : (
+        <></>
+      )}
+      {hasSlideShowItems && (
+        <div className="flex-1 overflow-hidden">
+          <Slideshow displayItems={slideShowItems} />
+        </div>
+      )}
+      <div className="fixed bottom-0 left-0 flex w-screen items-end justify-center py-2">
+        <Label
+          className={cn(
+            "text-center text-base text-muted-foreground",
+            hasSlideShowItems && "text-white opacity-95"
+          )}
+        >
           {siteConfig.name} © {new Date().getFullYear()}
         </Label>
       </div>
