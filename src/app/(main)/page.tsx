@@ -2,8 +2,8 @@
 
 import React from "react"
 import { useDisplayItems } from "@/apis/gdrive/use-display-items"
+import AppIcon from "@assets/icon.png"
 
-import { env } from "@/env.mjs"
 import { siteConfig } from "@/config/site"
 import { cn } from "@/lib/utils"
 import { duration } from "@/lib/utils/duration"
@@ -25,10 +25,23 @@ export default function MainPage() {
   const slideShowItems = displayItems?.filter((item) => item.type !== "event")
   const hasSlideShowItems = slideShowItems && slideShowItems.length > 0
 
+  const hasNothingToDisplay =
+    !firstEvent && !hasSlideShowItems && !isDisplayItemsLoading
+
   if (isDisplayItemsLoading) return <LoadingPage />
 
   return (
     <div className="mx-auto flex h-screen w-screen flex-col">
+      {hasNothingToDisplay && (
+        <div className="flex h-full w-full flex-col items-center justify-center gap-4 pb-8">
+          <img
+            className="w-40 rounded-md invert"
+            src={AppIcon.src}
+            alt="Logo"
+          />
+          <Label className="text-center text-6xl">Welcome to AIS Lab</Label>
+        </div>
+      )}
       {firstEvent ? (
         <EventCountdown
           displayItem={firstEvent}
@@ -42,16 +55,27 @@ export default function MainPage() {
           <Slideshow displayItems={slideShowItems} />
         </div>
       )}
-      <div className="fixed bottom-0 left-0 flex w-screen items-end justify-center py-2">
+      <div className="fixed bottom-0 left-0 flex w-screen flex-col items-center justify-end gap-1 py-2">
+        <img
+          className={cn(
+            "w-[72px] rounded-md",
+            !hasSlideShowItems && "invert",
+            hasNothingToDisplay && "hidden"
+          )}
+          src={AppIcon.src}
+          alt="Logo"
+        />
         <Label
           className={cn(
-            "text-center text-base text-muted-foreground",
-            hasSlideShowItems && "text-white opacity-95"
+            "text-center text-xs",
+            hasSlideShowItems && "text-white opacity-95",
+            hasNothingToDisplay && "text-base"
           )}
         >
           {siteConfig.name} © {new Date().getFullYear()}
         </Label>
       </div>
+
       <Button
         className="fixed bottom-4 right-4 z-50 opacity-0 transition-opacity duration-300 ease-in-out hover:opacity-100"
         onClick={async () => {

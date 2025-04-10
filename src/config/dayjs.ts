@@ -9,6 +9,8 @@ import updateLocate from "dayjs/plugin/updateLocale"
 import utc from "dayjs/plugin/utc"
 import weekday from "dayjs/plugin/weekday"
 
+import "dayjs/locale/ja" // Japanese locale
+
 dayjs.extend(advanced)
 dayjs.extend(customParseFormat)
 dayjs.extend(weekday)

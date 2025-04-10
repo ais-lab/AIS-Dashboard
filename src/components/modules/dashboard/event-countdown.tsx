@@ -98,7 +98,7 @@ const EventCountdown = ({ displayItem, type = "fullscreen" }: Props) => {
       <div
         className={cn(
           "flex w-full flex-col items-center justify-center pb-2 transition-all duration-300 animate-in fade-in",
-          isFullscreen ? "h-screen gap-6" : "h-[220px] gap-3"
+          isFullscreen ? "h-screen gap-6 pb-12" : "h-[220px] gap-3"
         )}
       >
         <div
@@ -110,7 +110,7 @@ const EventCountdown = ({ displayItem, type = "fullscreen" }: Props) => {
           <p
             className={cn(
               "text-muted-foreground",
-              isFullscreen ? "text-base" : "text-xs"
+              isFullscreen ? "text-base" : "text-[11.5px]"
             )}
           >
             Upcoming / 予定
@@ -127,7 +127,10 @@ const EventCountdown = ({ displayItem, type = "fullscreen" }: Props) => {
             )}
           >
             <Icons.calendar className="inline-block size-4" />
-            {dayjsConfig(event?.date).format("YYYY/MM/DD (dddd)")}
+            {dayjsConfig(event?.date).format("YYYY/MM/DD (ddd)")} /{" "}
+            {dayjsConfig(event?.date)
+              .locale("ja")
+              .format("YYYY年MM月DD日（ddd)")}
           </p>
         </div>
         <div
