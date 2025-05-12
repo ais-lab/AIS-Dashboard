@@ -19,6 +19,32 @@ export interface CountdownEvent {
   description?: string
 }
 
+export interface HourlyUnits {
+  time: string
+  temperature_2m: string
+  precipitation_probability: string
+  weather_code: string
+}
+
+export interface Hourly {
+  time: string[]
+  temperature_2m: number[]
+  precipitation_probability: number[]
+  weather_code: number[]
+}
+
+export interface WeatherData {
+  latitude: number
+  longitude: number
+  generationtime_ms: number
+  utc_offset_seconds: number
+  timezone: string
+  timezone_abbreviation: string
+  elevation: number
+  hourly_units: HourlyUnits
+  hourly: Hourly
+}
+
 export const runDurations = [
   "1-month",
   "3-month",

@@ -11,7 +11,7 @@ interface Props {
 const TextDisplayItem = ({ displayItem }: Props) => {
   const { data: text, isLoading: isTextLoading } = useTextItem({
     displayItem,
-    refetchInterval: duration.seconds(50),
+    refetchInterval: duration.seconds(45),
   })
 
   if (isTextLoading)

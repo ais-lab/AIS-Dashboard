@@ -26,7 +26,7 @@ const timeUnitMap: { [key: string]: string } = {
 const EventCountdown = ({ displayItem, type = "fullscreen" }: Props) => {
   const { data: event, isLoading: isEventLoading } = useCountDownEvent({
     displayItem,
-    refetchInterval: duration.seconds(45),
+    refetchInterval: duration.seconds(40),
   })
   const [timeLeft, setTimeLeft] = useState({
     months: 0,
@@ -100,7 +100,7 @@ const EventCountdown = ({ displayItem, type = "fullscreen" }: Props) => {
           "flex w-full flex-col items-center justify-center pb-2 transition-all duration-300 animate-in fade-in",
           isFullscreen
             ? "h-screen gap-6 pb-12"
-            : "h-[220px] flex-row justify-evenly gap-6 px-10"
+            : "mt-3 h-[180px] flex-row justify-evenly gap-6 px-10"
         )}
       >
         <div
@@ -120,7 +120,7 @@ const EventCountdown = ({ displayItem, type = "fullscreen" }: Props) => {
           <h1
             className={cn(
               "line-clamp-3 max-w-7xl",
-              isFullscreen ? "text-7xl" : "text-4xl"
+              isFullscreen ? "text-7xl" : "text-5xl"
             )}
           >
             {event?.name || "~"}

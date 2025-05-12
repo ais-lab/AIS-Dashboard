@@ -13,11 +13,12 @@ import { Icons } from "@/components/common/icons"
 import LoadingPage from "@/components/layouts/loading"
 import EventSlideShow from "@/components/modules/dashboard/event-slideshow"
 import Slideshow from "@/components/modules/dashboard/slideshow"
+import WeatherBadge from "@/components/modules/dashboard/weather-badge"
 
 export default function MainPage() {
   const { data: displayItems, isLoading: isDisplayItemsLoading } =
     useDisplayItems({
-      refetchInterval: duration.seconds(40),
+      refetchInterval: duration.seconds(30),
     })
 
   const events = displayItems?.filter((item) => item.type === "event")
@@ -32,6 +33,7 @@ export default function MainPage() {
 
   return (
     <div className="mx-auto flex h-screen w-screen flex-col">
+      <WeatherBadge latitude={34.8} longitude={135.56} />
       {hasNothingToDisplay && (
         <div className="flex h-full w-full flex-col items-center justify-center gap-4 pb-8">
           <img

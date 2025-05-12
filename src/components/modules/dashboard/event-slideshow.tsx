@@ -26,14 +26,14 @@ const EventSlideShow = ({ displayItems, type = "fullscreen" }: Props) => {
     <Carousel
       className={cn(
         "mx-auto w-full flex-1 overflow-hidden",
-        type === "fullscreen" ? "h-screen" : "max-h-[220px]"
+        type === "fullscreen" ? "h-screen" : "max-h-[180px]"
       )}
       opts={{
         loop: true,
       }}
       plugins={[
         Autoplay({
-          delay: duration.seconds(30),
+          delay: duration.seconds(35),
         }),
       ]}
     >
