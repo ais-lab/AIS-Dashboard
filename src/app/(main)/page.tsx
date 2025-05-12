@@ -11,22 +11,22 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Icons } from "@/components/common/icons"
 import LoadingPage from "@/components/layouts/loading"
-import EventCountdown from "@/components/modules/dashboard/event-countdown"
+import EventSlideShow from "@/components/modules/dashboard/event-slideshow"
 import Slideshow from "@/components/modules/dashboard/slideshow"
 
 export default function MainPage() {
   const { data: displayItems, isLoading: isDisplayItemsLoading } =
     useDisplayItems({
-      refetchInterval: duration.seconds(25),
+      refetchInterval: duration.seconds(40),
     })
 
-  const firstEvent = displayItems?.find((item) => item.type === "event")
+  const events = displayItems?.filter((item) => item.type === "event")
 
   const slideShowItems = displayItems?.filter((item) => item.type !== "event")
   const hasSlideShowItems = slideShowItems && slideShowItems.length > 0
 
   const hasNothingToDisplay =
-    !firstEvent && !hasSlideShowItems && !isDisplayItemsLoading
+    !events && !hasSlideShowItems && !isDisplayItemsLoading
 
   if (isDisplayItemsLoading) return <LoadingPage />
 
@@ -42,9 +42,9 @@ export default function MainPage() {
           <Label className="text-center text-6xl">Welcome to AIS Lab</Label>
         </div>
       )}
-      {firstEvent ? (
-        <EventCountdown
-          displayItem={firstEvent}
+      {events ? (
+        <EventSlideShow
+          displayItems={events}
           type={hasSlideShowItems ? "normal" : "fullscreen"}
         />
       ) : (

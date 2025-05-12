@@ -1,7 +1,8 @@
 import Autoplay from "embla-carousel-autoplay"
 
 import { env } from "@/env.mjs"
-import { BaseDisplayItem } from "@/types/models"
+import { BaseDisplayItem, FolderItem } from "@/types/models"
+import { cn } from "@/lib/utils"
 import { duration } from "@/lib/utils/duration"
 import {
   Carousel,
@@ -9,12 +10,16 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel"
 
+import FolderDisplayItem from "./folder-display-item"
+import TextDisplayItem from "./text-display-item"
+
 interface Props {
   displayItems: BaseDisplayItem[]
 }
 
 const Slideshow = ({ displayItems }: Props) => {
-  const images = displayItems.filter((item) => item.type === "image")
+  const items = displayItems
+
   return (
     <Carousel
       className="mx-auto h-[calc(100%)] w-full flex-1 overflow-hidden"
@@ -28,19 +33,47 @@ const Slideshow = ({ displayItems }: Props) => {
       ]}
     >
       <CarouselContent className="h-full">
-        {images.map((item, index) => (
-          <CarouselItem key={index} className="relative size-full pl-0">
-            <img
-              src={`${env.NEXT_PUBLIC_BASE_URL}/api/gdrive/img?fileId=${item.fileId}`}
-              className="size-full object-contain"
-            />
-            <img
-              src={`${env.NEXT_PUBLIC_BASE_URL}/api/gdrive/img?fileId=${item.fileId}`}
-              className="absolute inset-0 -z-10 size-full object-cover blur-md"
-            />
-            <div className="absolute inset-0 -z-10 size-full bg-black opacity-60" />
-          </CarouselItem>
-        ))}
+        {items.map((item, index) => {
+          if (item.type === "image") {
+            const isPreviousItemText =
+              index > 0 && items[index - 1].type !== "image"
+
+            return (
+              <CarouselItem
+                key={index}
+                className={cn(
+                  "relative size-full pl-0",
+                  isPreviousItemText ? "ml-4" : "ml-0"
+                )}
+              >
+                <img
+                  src={`${env.NEXT_PUBLIC_BASE_URL}/api/gdrive/img?fileId=${item.id}`}
+                  className="size-full object-contain"
+                />
+                <img
+                  src={`${env.NEXT_PUBLIC_BASE_URL}/api/gdrive/img?fileId=${item.id}`}
+                  className="absolute inset-0 -z-10 size-full object-cover blur-md"
+                />
+                <div className="absolute inset-0 -z-10 size-full bg-black opacity-60" />
+              </CarouselItem>
+            )
+          } else if (item.type === "text") {
+            return (
+              <CarouselItem key={index} className="relative size-full">
+                <TextDisplayItem displayItem={item} />
+              </CarouselItem>
+            )
+          } else if (item.type === "folder") {
+            return (
+              <CarouselItem key={index} className="relative size-full">
+                <FolderDisplayItem
+                  items={(item as FolderItem).items}
+                  folderName={item.name}
+                />
+              </CarouselItem>
+            )
+          }
+        })}
       </CarouselContent>
     </Carousel>
   )

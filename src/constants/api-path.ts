@@ -23,6 +23,7 @@ const MainApiPath = {
   gdrive: {
     default: "gdrive",
     json: () => `${MainApiPath.gdrive.default}/json`,
+    txt: () => `${MainApiPath.gdrive.default}/txt`,
   },
 } as const
 

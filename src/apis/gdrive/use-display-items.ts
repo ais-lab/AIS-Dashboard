@@ -3,23 +3,34 @@ import { displayItemKeys } from "@/constants/query-key-factory"
 import { useQuery, UseQueryOptions } from "@tanstack/react-query"
 
 import { env } from "@/env.mjs"
-import { BaseDisplayItem } from "@/types/models"
+import { BaseDisplayItem, FolderItem } from "@/types/models"
 
 import { MainApiClient } from "../http-client"
 
 const parseFilenameDates = (
   filename: string
-): { from: string | undefined; to: string | undefined } => {
+): { from: string | undefined; to: string | undefined; weight: number } => {
   if (typeof filename !== "string" || !filename) {
-    return { from: undefined, to: undefined }
+    return { from: undefined, to: undefined, weight: 1 }
   }
 
   const fMatch = filename.match(/F(\d{8})/)
   const tMatch = filename.match(/T(\d{8})/)
   const dMatch = filename.match(/D(\d+)/)
+  const wMatch = filename.match(/W(\d+)/)
+
+  let weight = 1
+
+  if (wMatch) {
+    const weightStr = wMatch[1]
+    const parsedWeight = parseInt(weightStr, 10)
+    if (!isNaN(parsedWeight)) {
+      weight = parsedWeight
+    }
+  }
 
   if (tMatch && dMatch) {
-    return { from: undefined, to: undefined }
+    return { from: undefined, to: undefined, weight }
   }
 
   try {
@@ -91,9 +102,10 @@ const parseFilenameDates = (
     return {
       from: finalFrom,
       to: finalTo,
+      weight,
     }
   } catch (e: unknown) {
-    return { from: undefined, to: undefined }
+    return { from: undefined, to: undefined, weight }
   }
 }
 
@@ -102,18 +114,24 @@ const getDisplayType = (mimeType: string) => {
     return "image"
   } else if (mimeType.includes("application/json")) {
     return "event"
+  } else if (mimeType.includes("application/vnd.google-apps.folder")) {
+    return "folder"
   }
   return "text"
 }
 
-const getDisplayItems = async () => {
+const getDisplayItems = async (level = 0, folderId = "") => {
+  if (level > 1) {
+    return []
+  }
+
   const rawItems = await MainApiClient.get(MainApiPath.gdrive.default, {
-    searchParams: { folderId: env.NEXT_PUBLIC_DRIVE_FOLDER_ID },
+    searchParams: { folderId: folderId || env.NEXT_PUBLIC_DRIVE_FOLDER_ID },
   }).json<{ files: { id: string; name: string; mimeType: string }[] }>()
   let items: BaseDisplayItem[] = []
   for (const file of rawItems.files) {
     const { id, name, mimeType } = file
-    const { from, to } = parseFilenameDates(name)
+    const { from, to, weight } = parseFilenameDates(name)
     if (!from || !to) {
       continue
     }
@@ -123,26 +141,45 @@ const getDisplayItems = async () => {
     if (from > new Date().toISOString() || to < new Date().toISOString()) {
       continue
     }
-    items.push({
-      fileId: id,
-      fileName: file.name,
-      type: getDisplayType(mimeType),
-      from,
-      to,
-    })
+
+    const itemType = getDisplayType(mimeType)
+
+    if (level !== 0 && !["image", "text"].includes(itemType)) continue
+
+    if (itemType === "folder") {
+      const subItems = await getDisplayItems(level + 1, id)
+      items.push({
+        id,
+        name: file.name,
+        type: itemType,
+        from,
+        to,
+        items: subItems,
+      } as FolderItem)
+      continue
+    } else {
+      items.push({
+        id,
+        name: file.name,
+        type: itemType,
+        from,
+        to,
+        weight,
+      })
+    }
   }
   return items
 }
 
 type UseDisplayItemsOptions = Omit<
-  UseQueryOptions<BaseDisplayItem[], Error>,
+  UseQueryOptions<BaseDisplayItem[] | FolderItem[], Error>,
   "queryKey" | "queryFn"
 >
 
 export const useDisplayItems = (options?: UseDisplayItemsOptions) => {
   return useQuery({
     queryKey: displayItemKeys.all(),
-    queryFn: getDisplayItems,
+    queryFn: () => getDisplayItems(),
     ...options,
   })
 }

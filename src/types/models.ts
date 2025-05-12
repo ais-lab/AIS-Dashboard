@@ -1,9 +1,14 @@
 export interface BaseDisplayItem {
   from: string
-  fileName: string
-  fileId: string
+  name: string
+  id: string
   to: string
-  type: "event" | "image" | "text"
+  type: "event" | "image" | "text" | "folder"
+  weight?: number
+}
+
+export interface FolderItem extends BaseDisplayItem {
+  items: BaseDisplayItem[]
 }
 
 export interface CountdownEvent {

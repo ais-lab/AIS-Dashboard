@@ -26,7 +26,7 @@ const timeUnitMap: { [key: string]: string } = {
 const EventCountdown = ({ displayItem, type = "fullscreen" }: Props) => {
   const { data: event, isLoading: isEventLoading } = useCountDownEvent({
     displayItem,
-    refetchInterval: duration.seconds(30),
+    refetchInterval: duration.seconds(45),
   })
   const [timeLeft, setTimeLeft] = useState({
     months: 0,
@@ -98,7 +98,9 @@ const EventCountdown = ({ displayItem, type = "fullscreen" }: Props) => {
       <div
         className={cn(
           "flex w-full flex-col items-center justify-center pb-2 transition-all duration-300 animate-in fade-in",
-          isFullscreen ? "h-screen gap-6 pb-12" : "h-[220px] gap-3"
+          isFullscreen
+            ? "h-screen gap-6 pb-12"
+            : "h-[220px] flex-row justify-evenly gap-6 px-10"
         )}
       >
         <div
@@ -110,20 +112,23 @@ const EventCountdown = ({ displayItem, type = "fullscreen" }: Props) => {
           <p
             className={cn(
               "text-muted-foreground",
-              isFullscreen ? "text-base" : "text-[11.5px]"
+              isFullscreen ? "text-base" : "text-sm"
             )}
           >
             Upcoming / 予定
           </p>
           <h1
-            className={cn("max-w-7xl", isFullscreen ? "text-7xl" : "text-3xl")}
+            className={cn(
+              "line-clamp-3 max-w-7xl",
+              isFullscreen ? "text-7xl" : "text-4xl"
+            )}
           >
             {event?.name || "~"}
           </h1>
           <p
             className={cn(
               "flex items-center justify-center gap-2 text-neutral-700",
-              isFullscreen ? "text-base" : "text-xs"
+              isFullscreen ? "text-base" : "text-sm"
             )}
           >
             <Icons.calendar className="inline-block size-4" />
@@ -131,6 +136,15 @@ const EventCountdown = ({ displayItem, type = "fullscreen" }: Props) => {
             {dayjsConfig(event?.date)
               .locale("ja")
               .format("YYYY年MM月DD日（ddd)")}
+          </p>
+          <p
+            className={cn(
+              "flex items-center justify-center gap-1 text-neutral-700",
+              isFullscreen ? "text-base" : "text-sm"
+            )}
+          >
+            <Icons.mapPin className="inline-block size-4" />
+            {event.address || "No address available / 住所はありません"}
           </p>
         </div>
         <div
@@ -183,6 +197,7 @@ const EventCountdown = ({ displayItem, type = "fullscreen" }: Props) => {
             })
           )}
         </div>
+
         {isFullscreen && (
           <p className="max-w-6xl text-balance text-center text-xs text-muted-foreground">
             {event?.description ||

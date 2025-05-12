@@ -1,3 +1,5 @@
+import { text } from "stream/consumers"
+
 export const userKeys = {
   currentUser: ["currentUser"],
   user: ["user"],
@@ -24,4 +26,5 @@ export const displayItemKeys = {
   displayItems: ["displayItems"],
   all: () => [...displayItemKeys.displayItems],
   event: (fileId: string) => [...displayItemKeys.displayItems, "event", fileId],
+  text: (fileId: string) => [...displayItemKeys.displayItems, "text", fileId],
 } as const

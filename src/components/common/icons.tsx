@@ -35,6 +35,7 @@ import {
   LayoutDashboard,
   LogOut,
   MailCheck,
+  MapPin,
   Megaphone,
   Moon,
   MoreHorizontal,
@@ -123,6 +124,7 @@ const icons = {
   badgeMinus: BadgeMinus,
   telegram: Telegram,
   fullScreen: Fullscreen,
+  mapPin: MapPin,
 }
 
 export const Icons: IconsType = icons

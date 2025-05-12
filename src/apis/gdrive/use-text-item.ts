@@ -7,28 +7,28 @@ import { BaseDisplayItem, CountdownEvent } from "@/types/models"
 
 import { MainApiClient } from "../http-client"
 
-interface GetCountDownEventParams {
+interface GetTextItemParams {
   displayItem: BaseDisplayItem
 }
 
-const getCountDownEvent = async ({ displayItem }: GetCountDownEventParams) => {
-  const item = await MainApiClient.get(MainApiPath.gdrive.json(), {
+const getTextItem = async ({ displayItem }: GetTextItemParams) => {
+  const item = await MainApiClient.get(MainApiPath.gdrive.txt(), {
     searchParams: { fileId: displayItem.id },
-  }).json<CountdownEvent>()
+  }).text()
   return item
 }
 
-type CountdownEventQueryOptions = Omit<
-  UseQueryOptions<CountdownEvent, Error>,
+type UseTextItemtQueryOptions = Omit<
+  UseQueryOptions<string, Error>,
   "queryKey" | "queryFn"
 > &
-  GetCountDownEventParams
+  GetTextItemParams
 
-export const useCountDownEvent = (options: CountdownEventQueryOptions) => {
+export const useTextItem = (options: UseTextItemtQueryOptions) => {
   const { displayItem, ...rest } = options
   return useQuery({
-    queryKey: displayItemKeys.event(displayItem.id),
-    queryFn: () => getCountDownEvent({ displayItem }),
+    queryKey: displayItemKeys.text(displayItem.id),
+    queryFn: () => getTextItem({ displayItem }),
     ...rest,
   })
 }
