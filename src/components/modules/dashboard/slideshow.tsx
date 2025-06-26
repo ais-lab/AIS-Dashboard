@@ -28,7 +28,7 @@ const Slideshow = ({ displayItems }: Props) => {
       }}
       plugins={[
         Autoplay({
-          delay: duration.seconds(15),
+          delay: duration.seconds(30),
         }),
       ]}
     >
