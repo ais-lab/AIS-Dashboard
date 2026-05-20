@@ -365,6 +365,20 @@ export default function TourPage() {
   const [simMs, setSimMs] = useState<number>(todayMs)
   const simIso = fmtSimDate(simMs)
 
+  // All unique F/T boundaries from sample data, so the user can see at a
+  // glance where transitions happen.
+  const sliderMarkers = useMemo(() => {
+    const collect = (item: SampleItem, set: Set<string>) => {
+      const p = parseFilename(item.name)
+      if (p.from) set.add(p.from)
+      if (p.to && p.to !== "9999-12-31") set.add(p.to)
+      item.children?.forEach((c) => collect(c, set))
+    }
+    const set = new Set<string>()
+    SAMPLE_FOLDER.forEach((i) => collect(i, set))
+    return Array.from(set).sort()
+  }, [])
+
   const eligibleTopLevel = useMemo(() => {
     return SAMPLE_FOLDER.filter((item) => {
       if (item.type === "folder") {
@@ -409,6 +423,28 @@ export default function TourPage() {
     }, demoMs)
     return () => clearTimeout(id)
   }, [isPaused, eligibleTopLevel.length, demoMs, currentIdx])
+
+  // Progress for the current slide: 0 -> 1 over demoMs, ticks every 50ms.
+  const [progress, setProgress] = useState(0)
+  useEffect(() => {
+    if (isPaused || eligibleTopLevel.length === 0) {
+      return
+    }
+    setProgress(0)
+    const start = performance.now()
+    const id = setInterval(() => {
+      const elapsed = performance.now() - start
+      const p = Math.min(1, elapsed / demoMs)
+      setProgress(p)
+    }, 50)
+    return () => clearInterval(id)
+  }, [currentIdx, demoMs, isPaused, eligibleTopLevel.length])
+
+  const realSeconds = currentTopItem
+    ? parseFilename(currentTopItem.name).displaySeconds
+    : undefined
+  const realSecondsLabel = realSeconds ?? (currentTopItem?.type === "event" ? 35 : 30)
+  const remainingDemoMs = Math.max(0, demoMs - demoMs * progress)
 
   useEffect(() => {
     if (currentTopItem?.type === "folder" && currentTopItem.children) {
@@ -459,15 +495,40 @@ export default function TourPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <input
-            type="range"
-            min={minMs}
-            max={maxMs}
-            value={simMs}
-            step={1000 * 60 * 60 * 24}
-            onChange={(e) => setSimMs(parseInt(e.target.value, 10))}
-            className="w-full accent-foreground"
-          />
+          <div className="relative">
+            <input
+              type="range"
+              min={minMs}
+              max={maxMs}
+              value={simMs}
+              step={1000 * 60 * 60 * 24}
+              onChange={(e) => setSimMs(parseInt(e.target.value, 10))}
+              className="relative z-10 w-full accent-foreground"
+            />
+            <div className="pointer-events-none absolute inset-x-1.5 -bottom-1 h-2">
+              {sliderMarkers.map((iso) => {
+                const dayMs = new Date(iso + "T00:00:00Z").getTime()
+                if (dayMs < minMs || dayMs > maxMs) return null
+                const pct = ((dayMs - minMs) / (maxMs - minMs)) * 100
+                return (
+                  <div
+                    key={iso}
+                    className="absolute -translate-x-1/2"
+                    style={{ left: `${pct}%` }}
+                    title={iso}
+                  >
+                    <div className="size-1.5 rounded-full bg-primary/70 ring-2 ring-background" />
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          <p className="text-[10px] text-muted-foreground">
+            Dots mark F/T boundaries in the sample folder — every point an
+            item enters or exits its window. Hover a dot to see the date. /
+            ドットはサンプルフォルダのF/T境界（アイテムの表示開始・終了日）です。
+            ホバーで日付が出ます。
+          </p>
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
             <span>{fmtSimDate(minMs)}</span>
             <div className="flex gap-2">
@@ -611,7 +672,7 @@ export default function TourPage() {
 
         <div className="space-y-4">
           <Card className="overflow-hidden">
-            <div className="aspect-video w-full bg-neutral-100">
+            <div className="relative aspect-video w-full bg-neutral-100">
               {displayed ? (
                 <div
                   key={displayed.name}
@@ -628,7 +689,27 @@ export default function TourPage() {
                   </p>
                 </div>
               )}
+              {displayed && (
+                <div className="absolute inset-x-0 bottom-0 h-1 bg-foreground/10">
+                  <div
+                    className="h-full bg-primary transition-[width] duration-75 ease-linear"
+                    style={{ width: `${progress * 100}%` }}
+                  />
+                </div>
+              )}
             </div>
+            {displayed && (
+              <div className="flex items-center justify-between border-t border-border bg-background/60 px-3 py-1.5 text-[11px] text-muted-foreground">
+                <span>
+                  On screen for / 表示時間 <strong>{realSecondsLabel}s</strong>
+                  {!realSeconds && " (default / 既定)"}
+                </span>
+                <span className="tabular-nums">
+                  Next in / 次まで {(remainingDemoMs / 1000).toFixed(1)}s (demo /
+                  デモ)
+                </span>
+              </div>
+            )}
           </Card>
 
           <Card>
