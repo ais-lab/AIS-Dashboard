@@ -58,7 +58,7 @@ const elementCatalog: Record<ElementType, ElementMeta> = {
   },
   folder: {
     label: "Folder (weighted random) / フォルダ（重み付きランダム）",
-    hint: "Create a Drive folder with this name. The board picks one child each cycle, weighted by W. Only images and text are read from inside. / この名前でDriveフォルダを作成します。Wの重みに応じて中から1つが選ばれます。中身は画像とテキストのみ読み込まれます。",
+    hint: "Create a Drive folder with this name and drop several images or text files inside. Each time the folder's turn comes up in the main slideshow, the board picks ONE child at random from that folder and shows it — not the whole folder, just one file per turn. Without W tokens every child has equal odds; add W<n> to a child's name to make it that many times more likely to be picked (W2 = 2× the chance, W5 = 5× the chance). Only images and text files inside the folder are eligible. / この名前でDriveフォルダを作成し、複数の画像やテキストファイルを入れてください。メインスライドショーでこのフォルダの順番が来るたびに、中から1つだけがランダムに選ばれて表示されます（フォルダ全体ではなく毎回1ファイル）。Wトークンがない場合は等確率。子ファイル名にW<n>を付けるとその倍率で選ばれやすくなります（W2は2倍、W5は5倍）。中身は画像とテキストファイルのみ対象です。",
     extensions: [],
     defaultExt: "",
     isFolder: true,
@@ -99,7 +99,7 @@ const tokens = [
     name: "Weight / 重み",
     syntax: "W<n>",
     example: "W3",
-    desc: "Relative weight for folder items in weighted random. Higher = more likely. Defaults to 1. / フォルダ内の重み付き抽選の比率。大きいほど選ばれやすい。既定値は1。",
+    desc: "Only matters for files inside a folder. The folder picks one child at random each turn; W<n> makes that file n times more likely to be picked. W3 is picked 3× as often as a default (W1) sibling. Defaults to 1 (token omitted). / フォルダ内のファイルにのみ影響します。フォルダは毎回1つだけ子をランダムに選びます。W<n>はその比率を上げます（W3は既定のW1兄弟の3倍選ばれる）。既定値は1（トークン省略時）。",
   },
   {
     token: "S",
@@ -149,6 +149,141 @@ const inputDateToDate = (s: string): Date | null => {
   return isNaN(d.getTime()) ? null : d
 }
 
+interface EventJsonHelperProps {
+  name: string
+  setName: (v: string) => void
+  date: string
+  setDate: (v: string) => void
+  address: string
+  setAddress: (v: string) => void
+  description: string
+  setDescription: (v: string) => void
+  note: string
+  setNote: (v: string) => void
+  json: string
+  onCopy: () => void
+  onDownload: () => void
+}
+
+const EventJsonHelper = (props: EventJsonHelperProps) => {
+  const [open, setOpen] = useState(false)
+  const canDownload = !!props.name.trim() && !!props.date
+
+  return (
+    <Card className="mb-10">
+      <CardHeader className="pb-3">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="flex w-full items-center justify-between text-left"
+        >
+          <CardTitle className="text-base">
+            Build the JSON file / JSONファイルを作成
+          </CardTitle>
+          <span className="text-xs text-muted-foreground">
+            {open ? "Hide / 閉じる" : "Show / 開く"}
+          </span>
+        </button>
+      </CardHeader>
+      {open && (
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">
+            Fill the fields, then copy the JSON or download it as a file. Drop
+            the result into your Drive folder using the filename above. /
+            項目を入力したらJSONをコピーするか、ファイルとしてダウンロード
+            してください。上のファイル名でDriveフォルダに置きます。
+          </p>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="evName">
+                Event name / イベント名 <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="evName"
+                value={props.name}
+                onChange={(e) => props.setName(e.target.value)}
+                placeholder="SI 2025"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="evDate">
+                Date / 日付 <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="evDate"
+                type="date"
+                value={props.date}
+                onChange={(e) => props.setDate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor="evAddress">Location / 場所</Label>
+              <Input
+                id="evAddress"
+                value={props.address}
+                onChange={(e) => props.setAddress(e.target.value)}
+                placeholder="Hiroshima, Japan / 広島県"
+              />
+            </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor="evDescription">Description / 説明</Label>
+              <textarea
+                id="evDescription"
+                value={props.description}
+                onChange={(e) => props.setDescription(e.target.value)}
+                rows={2}
+                className="flex w-full rounded border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Annual conference on systems integration"
+              />
+            </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor="evNote">Note / メモ</Label>
+              <Input
+                id="evNote"
+                value={props.note}
+                onChange={(e) => props.setNote(e.target.value)}
+                placeholder="Optional / 任意"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label className="mb-1.5 inline-block">Preview / プレビュー</Label>
+            <pre className="overflow-x-auto rounded-md border border-border bg-muted/30 p-3 text-xs">
+              <code>{props.json || "{}"}</code>
+            </pre>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={props.onCopy}
+              disabled={!canDownload}
+              size="sm"
+            >
+              Copy JSON / JSONをコピー
+            </Button>
+            <Button
+              variant="outline"
+              onClick={props.onDownload}
+              disabled={!canDownload}
+              size="sm"
+            >
+              Download .json / .jsonをダウンロード
+            </Button>
+          </div>
+
+          {!canDownload && (
+            <p className="text-xs text-muted-foreground">
+              Name and date are required. / 名前と日付は必須です。
+            </p>
+          )}
+        </CardContent>
+      )}
+    </Card>
+  )
+}
+
 const formatLong = (iso?: string) => {
   if (!iso) return "—"
   const d = new Date(iso + "T00:00:00Z")
@@ -190,6 +325,12 @@ export default function GuidePage() {
   const [weight, setWeight] = useState<string>("1")
   const [displaySeconds, setDisplaySeconds] = useState<string>("")
 
+  const [evName, setEvName] = useState("")
+  const [evDate, setEvDate] = useState("")
+  const [evAddress, setEvAddress] = useState("")
+  const [evDescription, setEvDescription] = useState("")
+  const [evNote, setEvNote] = useState("")
+
   const meta = elementCatalog[elementType]
 
   const handleElementChange = (next: ElementType) => {
@@ -229,6 +370,28 @@ export default function GuidePage() {
   ])
 
   const interpretation = useMemo(() => parseFilename(filename), [filename])
+
+  const eventJson = useMemo(() => {
+    const obj: Record<string, string> = {}
+    if (evName.trim()) obj.name = evName.trim()
+    if (evDate) obj.date = evDate
+    if (evAddress.trim()) obj.address = evAddress.trim()
+    if (evDescription.trim()) obj.description = evDescription.trim()
+    if (evNote.trim()) obj.note = evNote.trim()
+    return JSON.stringify(obj, null, 2)
+  }, [evName, evDate, evAddress, evDescription, evNote])
+
+  const downloadJson = () => {
+    const blob = new Blob([eventJson], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = filename.endsWith(".json") ? filename : `${filename}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
 
   const copy = async () => {
     try {
@@ -555,6 +718,31 @@ export default function GuidePage() {
           </div>
         </CardContent>
       </Card>
+
+      {elementType === "event" && (
+        <EventJsonHelper
+          name={evName}
+          setName={setEvName}
+          date={evDate}
+          setDate={setEvDate}
+          address={evAddress}
+          setAddress={setEvAddress}
+          description={evDescription}
+          setDescription={setEvDescription}
+          note={evNote}
+          setNote={setEvNote}
+          json={eventJson}
+          onCopy={async () => {
+            try {
+              await navigator.clipboard.writeText(eventJson)
+              toast.success("JSON copied / JSONをコピーしました")
+            } catch {
+              toast.error("Copy failed / コピーに失敗しました")
+            }
+          }}
+          onDownload={downloadJson}
+        />
+      )}
 
       <Separator className="mb-10" />
 

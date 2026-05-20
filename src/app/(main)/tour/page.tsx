@@ -390,15 +390,16 @@ export default function TourPage() {
 
   const currentTopItem = eligibleTopLevel[currentIdx]
 
-  // Demo speed: real S<n> seconds, scaled down so the tour stays snappy.
-  // 1 real second ≈ 100ms here, clamped to [1500ms, 6000ms]. A 30s slide
-  // becomes 3s in the tour; a 60s slide becomes 6s.
+  // Demo speed: aggressively compressed so item changes are immediately
+  // visible. 1 real second ≈ 40ms, clamped to [500ms, 2500ms]. Default
+  // (no S token) is 1.5s. So a 30s slide → 1.2s, a 60s slide → 2.4s, a
+  // 10s slide → 500ms (just enough to register the change).
   const demoMs = (() => {
     const parsedSec = currentTopItem
       ? parseFilename(currentTopItem.name).displaySeconds
       : undefined
-    if (!parsedSec) return 4000
-    return Math.min(6000, Math.max(1500, parsedSec * 100))
+    if (!parsedSec) return 1500
+    return Math.min(2500, Math.max(500, parsedSec * 40))
   })()
 
   useEffect(() => {
