@@ -1,22 +1,16 @@
-import MainApiPath from "@/constants/api-path"
 import { displayItemKeys } from "@/constants/query-key-factory"
 import { useQuery, UseQueryOptions } from "@tanstack/react-query"
 
-import { env } from "@/env.mjs"
 import { BaseDisplayItem, CountdownEvent } from "@/types/models"
 
-import { MainApiClient } from "../http-client"
+import { fetchDriveFileJson } from "./client"
 
 interface GetCountDownEventParams {
   displayItem: BaseDisplayItem
 }
 
-const getCountDownEvent = async ({ displayItem }: GetCountDownEventParams) => {
-  const item = await MainApiClient.get(MainApiPath.gdrive.json(), {
-    searchParams: { fileId: displayItem.id },
-  }).json<CountdownEvent>()
-  return item
-}
+const getCountDownEvent = ({ displayItem }: GetCountDownEventParams) =>
+  fetchDriveFileJson<CountdownEvent>(displayItem.id)
 
 type CountdownEventQueryOptions = Omit<
   UseQueryOptions<CountdownEvent, Error>,

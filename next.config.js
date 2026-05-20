@@ -1,51 +1,38 @@
 /** @type {import('next').NextConfig} */
+const isGithubPages = process.env.GITHUB_PAGES === "true"
+const repoBasePath = process.env.NEXT_PUBLIC_BASE_PATH || ""
+
 const nextConfig = {
   reactStrictMode: false,
-  output: "standalone",
-  redirects: () => {
-    return [
-      {
-        source: "/data-room",
-        destination: "/data-room/intro-video",
-        permanent: true,
-      },
-    ]
-  },
+  output: "export",
+  images: { unoptimized: true },
+  trailingSlash: true,
+  basePath: isGithubPages ? repoBasePath : undefined,
+  assetPrefix: isGithubPages ? repoBasePath || undefined : undefined,
   webpack(config) {
     const fileLoaderRule = config.module.rules.find((rule) =>
       rule.test?.test?.(".svg")
     )
 
     config.module.rules.push(
-      // Reapply the existing rule, but only for svg imports ending in ?url
       {
         ...fileLoaderRule,
         test: /\.svg$/i,
-        resourceQuery: /url/, // *.svg?url
+        resourceQuery: /url/,
       },
-      // Convert all other *.svg imports to React components
       {
         test: /\.svg$/i,
         issuer: fileLoaderRule.issuer,
-        resourceQuery: { not: [...fileLoaderRule.resourceQuery.not, /url/] }, // exclude if *.svg?url
+        resourceQuery: { not: [...fileLoaderRule.resourceQuery.not, /url/] },
         use: ["@svgr/webpack"],
       }
     )
 
-    // Modify the file loader rule to ignore *.svg, since we have it handled now.
     fileLoaderRule.exclude = /\.svg$/i
 
     config.resolve.alias.canvas = false
 
     return config
-  },
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "api.vietqr.io",
-      },
-    ],
   },
 }
 

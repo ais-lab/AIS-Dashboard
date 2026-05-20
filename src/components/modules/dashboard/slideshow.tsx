@@ -1,6 +1,6 @@
 import Autoplay from "embla-carousel-autoplay"
 
-import { env } from "@/env.mjs"
+import { driveImageUrl } from "@/apis/gdrive/client"
 import { BaseDisplayItem, FolderItem } from "@/types/models"
 import { cn } from "@/lib/utils"
 import { duration } from "@/lib/utils/duration"
@@ -47,11 +47,11 @@ const Slideshow = ({ displayItems }: Props) => {
                 )}
               >
                 <img
-                  src={`${env.NEXT_PUBLIC_BASE_URL}/api/gdrive/img?fileId=${item.id}`}
+                  src={driveImageUrl(item.id)}
                   className="size-full object-contain"
                 />
                 <img
-                  src={`${env.NEXT_PUBLIC_BASE_URL}/api/gdrive/img?fileId=${item.id}`}
+                  src={driveImageUrl(item.id)}
                   className="absolute inset-0 -z-10 size-full object-cover blur-md"
                 />
                 <div className="absolute inset-0 -z-10 size-full bg-black opacity-60" />

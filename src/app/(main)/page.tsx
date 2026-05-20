@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import Link from "next/link"
 import { useDisplayItems } from "@/apis/gdrive/use-display-items"
 import AppIcon from "@assets/icon.png"
 
@@ -76,6 +77,19 @@ export default function MainPage() {
         >
           {siteConfig.name} © {new Date().getFullYear()}
         </Label>
+      </div>
+
+      <div className="fixed bottom-4 left-4 z-50 flex gap-2 opacity-0 transition-opacity duration-300 ease-in-out hover:opacity-100">
+        <Link href="/tutorial/">
+          <Button variant="outline" size="sm">
+            Filename guide
+          </Button>
+        </Link>
+        <Link href="/admin/">
+          <Button variant="outline" size="sm">
+            Admin
+          </Button>
+        </Link>
       </div>
 
       <Button

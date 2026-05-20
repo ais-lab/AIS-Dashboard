@@ -1,4 +1,4 @@
-import { env } from "@/env.mjs"
+import { driveImageUrl } from "@/apis/gdrive/client"
 import { BaseDisplayItem } from "@/types/models"
 import { Badge } from "@/components/ui/badge"
 
@@ -45,11 +45,11 @@ const FolderDisplayItem = ({ items, folderName }: Props) => {
       <>
         {badge}
         <img
-          src={`${env.NEXT_PUBLIC_BASE_URL}/api/gdrive/img?fileId=${selectedItem.id}`}
+          src={driveImageUrl(selectedItem.id)}
           className="ml-4 size-full object-contain"
         />
         <img
-          src={`${env.NEXT_PUBLIC_BASE_URL}/api/gdrive/img?fileId=${selectedItem.id}`}
+          src={driveImageUrl(selectedItem.id)}
           className="absolute inset-0 -z-10 ml-4 size-full object-cover blur-md"
         />
         <div className="absolute inset-0 -z-10 size-full bg-black opacity-60" />
