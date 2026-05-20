@@ -105,24 +105,29 @@ const tokens = [
 
 const examples = [
   {
-    name: "summer_sale_F20260601T20260831.png",
+    name: "new_members_F20260401T20260430.png",
     meaning:
-      "An image shown from June 1 to August 31, 2026. Default weight (1). / 2026年6月1日〜8月31日に表示される画像。重みは既定（1）。",
+      "An image welcoming new lab members, shown only during April 2026. / 2026年4月の1ヶ月間だけ表示される新メンバー歓迎の画像。",
   },
   {
-    name: "daily_quote_F20260101D365.txt",
+    name: "weekly_seminar_F20260101D365.txt",
     meaning:
-      "A text slide shown from January 1, 2026 for 365 days. / 2026年1月1日から365日間表示されるテキストスライド。",
+      "A text slide for the weekly seminar reminder, shown from January 1, 2026 for 365 days. / 2026年1月1日から365日間表示される週次セミナーのお知らせ。",
   },
   {
-    name: "promo_W5.png",
+    name: "best_paper_award_W3.png",
     meaning:
-      "No date window — eligible immediately and never expires. Weight 5, so it appears 5× more often inside a folder. / 期間指定なし。無期限で表示。重み5でフォルダ内では5倍の確率で選ばれます。",
+      "A congratulations banner with no date window — always eligible. Weight 3 makes it appear 3× more often inside a folder. / 期間指定なしの受賞報告。重み3でフォルダ内では3倍の確率で選ばれます。",
   },
   {
     name: "si2025_F20251101T20251210.json",
     meaning:
       "A conference countdown shown from November 1 to December 10, 2025. Renders as a banner with name + date + location + live countdown. / 2025年11月1日〜12月10日に表示される学会のカウントダウン。名称・日付・場所・残り時間のバナーとして表示されます。",
+  },
+  {
+    name: "iros2026_deadline_F20260301T20260315.json",
+    meaning:
+      "A submission deadline countdown — pressure on the wall during the final two weeks. / 投稿締切のカウントダウン。締切前2週間に表示されます。",
   },
 ]
 

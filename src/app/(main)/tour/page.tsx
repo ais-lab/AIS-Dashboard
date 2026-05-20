@@ -16,7 +16,6 @@ interface SampleItem {
   name: string
   type: SampleType
   preview?: {
-    gradient?: string
     title?: string
     subtitle?: string
     markdown?: string
@@ -27,60 +26,55 @@ interface SampleItem {
 
 const SAMPLE_FOLDER: SampleItem[] = [
   {
-    name: "welcome_banner.png",
+    name: "lab_welcome.png",
     type: "image",
     preview: {
-      gradient: "from-indigo-500 via-purple-500 to-pink-500",
-      title: "Welcome / ようこそ",
-      subtitle: "AIS Lab",
+      title: "Welcome to AIS Lab / AIS研究室へようこそ",
+      subtitle: "Ritsumeikan University / 立命館大学",
     },
   },
   {
-    name: "summer_sale_F20260601T20260831.png",
+    name: "new_members_F20260401T20260430.png",
     type: "image",
     preview: {
-      gradient: "from-orange-400 via-amber-300 to-yellow-300",
-      title: "Summer Sale / 夏セール",
-      subtitle: "June 1 – August 31",
+      title: "New Members 2026 / 新メンバー 2026",
+      subtitle: "April orientation / 4月オリエンテーション",
     },
   },
   {
-    name: "daily_quote_F20260101D365.txt",
+    name: "weekly_seminar_F20260101D365.txt",
     type: "text",
     preview: {
       markdown:
-        "## Stay curious / 好奇心を持ち続けて\n\nThe best way to predict the future is to invent it.",
+        "## Weekly Seminar / 週次セミナー\n\nEvery Friday 15:00 — Room 401\n\n毎週金曜 15:00 — 401号室",
     },
   },
   {
-    name: "featured_promo_W3.png",
+    name: "best_paper_award_W3.png",
     type: "image",
     preview: {
-      gradient: "from-rose-500 via-red-500 to-orange-500",
-      title: "Featured / 注目",
-      subtitle: "Weighted 3× / 重み3",
+      title: "Best Paper Award / 優秀論文賞",
+      subtitle: "Congratulations Tanaka-san / おめでとうございます",
     },
   },
   {
-    name: "winter_sale_F20251201T20260201.png",
+    name: "spring_retreat_F20260301T20260331.png",
     type: "image",
     preview: {
-      gradient: "from-cyan-500 via-blue-500 to-indigo-500",
-      title: "Winter Sale / 冬セール",
-      subtitle: "Dec 2025 – Feb 2026",
+      title: "Spring Retreat / 春合宿",
+      subtitle: "Karuizawa, March 2026 / 軽井沢 2026年3月",
     },
   },
   {
-    name: "christmas_F20261220T20261226.png",
+    name: "thesis_defense_F20261220T20261226.png",
     type: "image",
     preview: {
-      gradient: "from-emerald-500 via-green-500 to-red-500",
-      title: "Christmas / クリスマス",
-      subtitle: "Dec 20 – 26",
+      title: "Thesis Defense Week / 修論審査週間",
+      subtitle: "Master & PhD candidates / 修士・博士課程",
     },
   },
   {
-    name: "si2025_conference_F20251101T20251210.json",
+    name: "si2025_F20251101T20251210.json",
     type: "event",
     preview: {
       event: {
@@ -91,41 +85,53 @@ const SAMPLE_FOLDER: SampleItem[] = [
     },
   },
   {
-    name: "ais_retreat_F20260901T20260920.json",
+    name: "iros2026_deadline_F20260301T20260315.json",
     type: "event",
     preview: {
       event: {
-        name: "AIS Lab Retreat / AIS研究室合宿",
-        date: "2026-09-20",
-        address: "Kyoto, Japan / 京都府",
+        name: "IROS 2026 Submission Deadline / 投稿締切",
+        date: "2026-03-15",
+        address: "Online submission / オンライン投稿",
       },
     },
   },
   {
-    name: "tips/",
+    name: "open_house_F20260601T20260615.json",
+    type: "event",
+    preview: {
+      event: {
+        name: "Lab Open House / オープンラボ",
+        date: "2026-06-15",
+        address: "Building 5, Ritsumeikan / 立命館5号館",
+      },
+    },
+  },
+  {
+    name: "reading_group/",
     type: "folder",
     children: [
       {
-        name: "tip_focus_W2.md",
-        type: "text",
-        preview: {
-          markdown: "### Tip 1 / コツ 1\nMake the easy thing the default.",
-        },
-      },
-      {
-        name: "tip_iterate.md",
+        name: "paper_a_W2.md",
         type: "text",
         preview: {
           markdown:
-            "### Tip 2 / コツ 2\nShip small, ship often. / 小さく早くリリース。",
+            "### This week / 今週\nAttention Is All You Need\n*Vaswani et al., 2017*",
         },
       },
       {
-        name: "tip_listen_W5.md",
+        name: "paper_b.md",
         type: "text",
         preview: {
           markdown:
-            "### Tip 3 / コツ 3\nThe loudest voice isn't the truth. / 大きな声 ≠ 真実。",
+            "### This week / 今週\nDeep Residual Learning\n*He et al., 2015*",
+        },
+      },
+      {
+        name: "paper_c_W5.md",
+        type: "text",
+        preview: {
+          markdown:
+            "### This week / 今週\nMastering the Game of Go without Human Knowledge\n*Silver et al., 2017*",
         },
       },
     ],
@@ -231,20 +237,21 @@ const PreviewSlide = ({
   item: SampleItem
   simMs: number
 }) => {
-  if (item.type === "image" && item.preview?.gradient) {
+  if (item.type === "image") {
     return (
-      <div
-        className={cn(
-          "flex h-full w-full flex-col items-center justify-center bg-gradient-to-br p-8 text-white",
-          item.preview.gradient
-        )}
-      >
-        <div className="text-4xl font-bold drop-shadow-md">
-          {item.preview.title}
+      <div className="relative flex h-full w-full flex-col items-center justify-center gap-3 bg-muted p-8 text-center">
+        <Image className="size-10 text-muted-foreground/40" />
+        <div className="text-2xl font-semibold text-foreground">
+          {item.preview?.title}
         </div>
-        {item.preview.subtitle && (
-          <div className="mt-2 text-sm opacity-90">{item.preview.subtitle}</div>
+        {item.preview?.subtitle && (
+          <div className="text-sm text-muted-foreground">
+            {item.preview.subtitle}
+          </div>
         )}
+        <code className="absolute bottom-3 left-1/2 -translate-x-1/2 font-mono text-[10px] text-muted-foreground/60">
+          {item.name}
+        </code>
       </div>
     )
   }
@@ -650,19 +657,22 @@ export default function TourPage() {
                 </li>
                 <li>
                   Slide past <strong>Dec 10, 2025</strong> — countdown switches
-                  to &ldquo;Time is up! / 時間切れ!&rdquo; until the event drops out of
-                  its window on Dec 11. / 2025年12月10日を過ぎると「時間切れ」
-                  表示になります。
+                  to &ldquo;Time is up! / 時間切れ!&rdquo; until the file drops out of
+                  its window. / 2025年12月10日を過ぎると「時間切れ」表示に
+                  なります。
                 </li>
                 <li>
-                  Slide to <strong>September 2026</strong> — AIS Lab Retreat
-                  becomes active. / 2026年9月に動かすと研究室合宿が表示されます。
+                  Slide to <strong>March 2026</strong> — the IROS 2026
+                  submission deadline countdown takes over the screen. /
+                  2026年3月に動かすとIROS 2026の投稿締切カウントダウンが
+                  表示されます。
                 </li>
                 <li>
-                  Watch the <code>tips/</code> folder — each rotation re-rolls
-                  the weighted pick (W5 wins most). /{" "}
-                  <code>tips/</code>フォルダではローテーションごとに重み付き抽選が
-                  再実行されます（W5が最頻）。
+                  Watch the <code>reading_group/</code> folder — each rotation
+                  re-rolls the weighted paper pick (W5 wins most often). /{" "}
+                  <code>reading_group/</code>
+                  フォルダではローテーションごとに重み付き抽選が再実行されます
+                  （W5が最頻）。
                 </li>
               </ul>
             </CardContent>
