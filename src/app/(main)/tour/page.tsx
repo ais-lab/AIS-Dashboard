@@ -741,7 +741,7 @@ export default function TourPage() {
                       key={`ev-${currentEvent?.name}`}
                       className={cn(
                         "w-full overflow-hidden border-b border-border animate-in fade-in zoom-in-95 duration-500",
-                        splitMode ? "h-[20%] min-h-[60px]" : "h-full"
+                        splitMode ? "h-[25%] min-h-[72px]" : "h-full"
                       )}
                     >
                       {currentEvent && (
