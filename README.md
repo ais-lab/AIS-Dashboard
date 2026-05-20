@@ -1,9 +1,9 @@
-# aisboard
+# AIS-Dashboard
 
 Display board for AIS Lab — a Next.js app that turns a Google Drive folder
 into a kiosk-style slideshow. Hosted as a static site on GitHub Pages.
 
-Live: [princ3od.github.io/aisboard](https://princ3od.github.io/aisboard/)
+Live: [ais-lab.github.io/AIS-Dashboard](https://ais-lab.github.io/AIS-Dashboard/)
 
 ## What it does
 
@@ -13,7 +13,7 @@ Live: [princ3od.github.io/aisboard](https://princ3od.github.io/aisboard/)
   - JSON → countdown event card
   - Folder → nested slideshow (1 level deep, weighted random)
 - Display windows are encoded in filenames (e.g. `summer_F20260601T20260831.png`).
-  See [/tutorial](https://princ3od.github.io/aisboard/tutorial/) for the
+  See [/tutorial](https://ais-lab.github.io/AIS-Dashboard/tutorial/) for the
   full filename rules and an interactive name generator.
 - Folder source can be overridden per-browser via `/admin` (handy for
   testing without redeploying).
@@ -54,10 +54,10 @@ All values are `NEXT_PUBLIC_*` and shipped to the browser.
 | ----------------------------- | ----------------------------------------------------------------------- |
 | `NEXT_PUBLIC_GOOGLE_API_KEY`  | Google Cloud API key with Drive API enabled, restricted by HTTP referrer |
 | `NEXT_PUBLIC_DRIVE_FOLDER_ID` | Default Drive folder ID (can be overridden per-browser via `/admin`)    |
-| `NEXT_PUBLIC_BASE_URL`        | Canonical URL (e.g. `https://princ3od.github.io/aisboard`)              |
+| `NEXT_PUBLIC_BASE_URL`        | Canonical URL (e.g. `https://ais-lab.github.io/AIS-Dashboard`)          |
 | `NEXT_PUBLIC_APP_URL`         | Same as above for most setups                                           |
 | `NEXT_PUBLIC_ENV`             | `staging` or `production`                                               |
-| `NEXT_PUBLIC_BASE_PATH`       | Subpath when hosted under one (e.g. `/aisboard` on GitHub Pages)        |
+| `NEXT_PUBLIC_BASE_PATH`       | Subpath when hosted under one (e.g. `/AIS-Dashboard` on GitHub Pages)   |
 
 In CI (`.github/workflows/deploy.yml`), every var above except the API key
 is read from repo **Variables**; `NEXT_PUBLIC_GOOGLE_API_KEY` lives in
