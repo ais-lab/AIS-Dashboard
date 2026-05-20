@@ -9,10 +9,12 @@ export interface ParsedFilename {
   from?: string
   to?: string
   weight: number
+  displaySeconds?: number
   hasFromToken: boolean
   hasToToken: boolean
   hasDurationToken: boolean
   hasWeightToken: boolean
+  hasDisplaySecondsToken: boolean
   conflict?: string
 }
 
@@ -34,6 +36,7 @@ export const parseFilename = (filename: string): ParsedFilename => {
   const tMatch = filename.match(/T(\d{8})/)
   const dMatch = filename.match(/D(\d+)/)
   const wMatch = filename.match(/W(\d+)/)
+  const sMatch = filename.match(/S(\d+)/)
 
   const result: ParsedFilename = {
     weight: 1,
@@ -41,11 +44,17 @@ export const parseFilename = (filename: string): ParsedFilename => {
     hasToToken: !!tMatch,
     hasDurationToken: !!dMatch,
     hasWeightToken: !!wMatch,
+    hasDisplaySecondsToken: !!sMatch,
   }
 
   if (wMatch) {
     const w = parseInt(wMatch[1], 10)
     if (!isNaN(w)) result.weight = w
+  }
+
+  if (sMatch) {
+    const s = parseInt(sMatch[1], 10)
+    if (!isNaN(s) && s > 0) result.displaySeconds = s
   }
 
   if (tMatch && dMatch) {
@@ -101,6 +110,7 @@ export interface BuildOptions {
   to?: Date | null
   durationDays?: number | null
   weight?: number | null
+  displaySeconds?: number | null
 }
 
 export const buildFilename = (opts: BuildOptions): string => {
@@ -115,6 +125,9 @@ export const buildFilename = (opts: BuildOptions): string => {
   }
 
   if (opts.weight && opts.weight !== 1) parts.push(`W${opts.weight}`)
+
+  if (opts.displaySeconds && opts.displaySeconds > 0)
+    parts.push(`S${opts.displaySeconds}`)
 
   const tokens = parts.join("")
   const base = opts.base.trim() || "untitled"

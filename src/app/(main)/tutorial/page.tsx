@@ -101,6 +101,13 @@ const tokens = [
     example: "W3",
     desc: "Relative weight for folder items in weighted random. Higher = more likely. Defaults to 1. / フォルダ内の重み付き抽選の比率。大きいほど選ばれやすい。既定値は1。",
   },
+  {
+    token: "S",
+    name: "Display duration / 表示時間（秒）",
+    syntax: "S<n>",
+    example: "S60",
+    desc: "How long this item stays on screen, in seconds. Defaults to 30s for slideshow items, 35s for event banners. Use for posters that need reading time, or quick announcements that should flash by. / この項目の表示時間（秒）。スライドショーは既定30秒、イベントバナーは35秒。読み込み時間が必要なポスターや、短時間表示したいお知らせに使います。",
+  },
 ]
 
 const examples = [
@@ -128,6 +135,11 @@ const examples = [
     name: "iros2026_deadline_F20260301T20260315.json",
     meaning:
       "A submission deadline countdown — pressure on the wall during the final two weeks. / 投稿締切のカウントダウン。締切前2週間に表示されます。",
+  },
+  {
+    name: "poster_workshop_F20260301T20260310_S60.png",
+    meaning:
+      "A workshop poster with lots of text — held on screen for 60 seconds so readers have time. / 文章の多いポスター。60秒間表示して読む時間を確保します。",
   },
 ]
 
@@ -176,6 +188,7 @@ export default function GuidePage() {
   const [to, setTo] = useState<string>("")
   const [durationDays, setDurationDays] = useState<string>("7")
   const [weight, setWeight] = useState<string>("1")
+  const [displaySeconds, setDisplaySeconds] = useState<string>("")
 
   const meta = elementCatalog[elementType]
 
@@ -202,8 +215,18 @@ export default function GuidePage() {
       durationDays:
         endMode === "duration" ? parseInt(durationDays, 10) || null : null,
       weight: parseInt(weight, 10) || 1,
+      displaySeconds: parseInt(displaySeconds, 10) || null,
     })
-  }, [base, resolvedExtension, from, endMode, to, durationDays, weight])
+  }, [
+    base,
+    resolvedExtension,
+    from,
+    endMode,
+    to,
+    durationDays,
+    weight,
+    displaySeconds,
+  ])
 
   const interpretation = useMemo(() => parseFilename(filename), [filename])
 
@@ -451,6 +474,27 @@ export default function GuidePage() {
                 : "Only relevant inside a folder. Higher = more likely to be picked. Defaults to 1 (no token written). / フォルダ内でのみ有効。大きいほど選ばれやすい。既定値は1（トークンは書き込まれません）。"}
             </p>
           </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="displaySeconds">
+              Display duration (seconds) / 表示時間（秒）
+            </Label>
+            <Input
+              id="displaySeconds"
+              type="number"
+              min={1}
+              value={displaySeconds}
+              onChange={(e) => setDisplaySeconds(e.target.value)}
+              placeholder={meta.label.includes("event") ? "35" : "30"}
+            />
+            <p className="text-xs text-muted-foreground">
+              How long this item stays on screen before the next slide. Leave
+              blank for the default ({meta.label.includes("event") ? "35" : "30"}
+              s). /
+              次のスライドに切り替わるまでの表示時間。空欄で既定値（
+              {meta.label.includes("event") ? "35" : "30"}秒）。
+            </p>
+          </div>
         </CardContent>
       </Card>
 
@@ -494,6 +538,14 @@ export default function GuidePage() {
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline">Weight / 重み</Badge>
               <span>{interpretation.weight}</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline">Display / 表示時間</Badge>
+              <span>
+                {interpretation.displaySeconds
+                  ? `${interpretation.displaySeconds}s`
+                  : `default ${meta.label.includes("event") ? "35" : "30"}s / 既定 ${meta.label.includes("event") ? "35" : "30"}秒`}
+              </span>
             </div>
             {interpretation.conflict && (
               <p className="text-sm text-destructive">

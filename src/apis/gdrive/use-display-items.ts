@@ -42,6 +42,7 @@ const getDisplayItems = async (level = 0, folderId = "") => {
         type: itemType,
         from,
         to,
+        displaySeconds: parsed.displaySeconds,
         items: subItems,
       } as FolderItem)
     } else {
@@ -52,6 +53,7 @@ const getDisplayItems = async (level = 0, folderId = "") => {
         from,
         to,
         weight: parsed.weight,
+        displaySeconds: parsed.displaySeconds,
       })
     }
   }

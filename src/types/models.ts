@@ -5,6 +5,7 @@ export interface BaseDisplayItem {
   to: string
   type: "event" | "image" | "text" | "folder"
   weight?: number
+  displaySeconds?: number
 }
 
 export interface FolderItem extends BaseDisplayItem {

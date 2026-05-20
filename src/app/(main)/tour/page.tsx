@@ -34,11 +34,11 @@ const SAMPLE_FOLDER: SampleItem[] = [
     },
   },
   {
-    name: "new_members_F20260401T20260430.png",
+    name: "new_members_F20260401T20260430_S60.png",
     type: "image",
     preview: {
       title: "New Members 2026 / 新メンバー 2026",
-      subtitle: "April orientation / 4月オリエンテーション",
+      subtitle: "April orientation — dwells 60s / 4月、60秒表示",
     },
   },
   {
@@ -50,11 +50,11 @@ const SAMPLE_FOLDER: SampleItem[] = [
     },
   },
   {
-    name: "best_paper_award_W3.png",
+    name: "best_paper_award_W3_S10.png",
     type: "image",
     preview: {
       title: "Best Paper Award / 優秀論文賞",
-      subtitle: "Congratulations Tanaka-san / おめでとうございます",
+      subtitle: "Quick celebration — 10s / 短時間表示 10秒",
     },
   },
   {
@@ -317,12 +317,18 @@ const TokenExplainer = ({ name }: { name: string }) => {
   const tMatch = name.match(/T(\d{8})/)
   const dMatch = name.match(/D(\d+)/)
   const wMatch = name.match(/W(\d+)/)
+  const sMatch = name.match(/S(\d+)/)
 
   const chips: { token: string; meaning: string }[] = []
   if (fMatch) chips.push({ token: fMatch[0], meaning: `from ${parsed.from}` })
   if (tMatch) chips.push({ token: tMatch[0], meaning: `to ${parsed.to}` })
   if (dMatch) chips.push({ token: dMatch[0], meaning: `for ${dMatch[1]} days` })
   if (wMatch) chips.push({ token: wMatch[0], meaning: `weight ${parsed.weight}` })
+  if (sMatch)
+    chips.push({
+      token: sMatch[0],
+      meaning: `dwells ${parsed.displaySeconds}s on screen`,
+    })
 
   return (
     <div className="space-y-2">
@@ -382,15 +388,26 @@ export default function TourPage() {
     setCurrentIdx(0)
   }, [eligibleTopLevel.length])
 
+  const currentTopItem = eligibleTopLevel[currentIdx]
+
+  // Demo speed: real S<n> seconds, scaled down so the tour stays snappy.
+  // 1 real second ≈ 100ms here, clamped to [1500ms, 6000ms]. A 30s slide
+  // becomes 3s in the tour; a 60s slide becomes 6s.
+  const demoMs = (() => {
+    const parsedSec = currentTopItem
+      ? parseFilename(currentTopItem.name).displaySeconds
+      : undefined
+    if (!parsedSec) return 4000
+    return Math.min(6000, Math.max(1500, parsedSec * 100))
+  })()
+
   useEffect(() => {
     if (isPaused || eligibleTopLevel.length === 0) return
-    const id = setInterval(() => {
+    const id = setTimeout(() => {
       setCurrentIdx((i) => (i + 1) % eligibleTopLevel.length)
-    }, 4000)
-    return () => clearInterval(id)
-  }, [isPaused, eligibleTopLevel.length])
-
-  const currentTopItem = eligibleTopLevel[currentIdx]
+    }, demoMs)
+    return () => clearTimeout(id)
+  }, [isPaused, eligibleTopLevel.length, demoMs, currentIdx])
 
   useEffect(() => {
     if (currentTopItem?.type === "folder" && currentTopItem.children) {
@@ -673,6 +690,15 @@ export default function TourPage() {
                   <code>reading_group/</code>
                   フォルダではローテーションごとに重み付き抽選が再実行されます
                   （W5が最頻）。
+                </li>
+                <li>
+                  Notice the dwell time changes with <code>S</code>: the new
+                  members poster (S60) lingers longer; the award flash (S10)
+                  flips by quickly. Demo time is scaled down so the tour stays
+                  watchable. /{" "}
+                  <code>S</code>トークンによって表示時間が変わります：新メンバー
+                  ポスター（S60）は長く、受賞報告（S10）は短く表示されます。
+                  デモは縮尺を圧縮しています。
                 </li>
               </ul>
             </CardContent>
