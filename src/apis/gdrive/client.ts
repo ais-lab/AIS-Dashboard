@@ -8,6 +8,25 @@ export interface DriveFile {
   mimeType: string
 }
 
+export class DriveError extends Error {
+  status: number
+  reason: "not_found" | "forbidden" | "unauthorized" | "rate_limited" | "other"
+  constructor(status: number, message: string) {
+    super(message)
+    this.status = status
+    this.reason =
+      status === 404
+        ? "not_found"
+        : status === 403
+          ? "forbidden"
+          : status === 401
+            ? "unauthorized"
+            : status === 429
+              ? "rate_limited"
+              : "other"
+  }
+}
+
 export const listDriveFolder = async (
   folderId: string
 ): Promise<{ files: DriveFile[] }> => {
@@ -18,7 +37,7 @@ export const listDriveFolder = async (
   url.searchParams.set("key", env.NEXT_PUBLIC_GOOGLE_API_KEY)
 
   const res = await fetch(url.toString())
-  if (!res.ok) throw new Error(`Drive list failed: ${res.status}`)
+  if (!res.ok) throw new DriveError(res.status, `Drive list failed: ${res.status}`)
   return res.json()
 }
 

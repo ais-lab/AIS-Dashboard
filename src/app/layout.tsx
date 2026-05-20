@@ -50,6 +50,10 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico?v=4",
   },
+  robots: {
+    index: false,
+    follow: false,
+  },
 }
 
 export const viewport: Viewport = {

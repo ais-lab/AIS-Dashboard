@@ -3,6 +3,17 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+    paths:
+      - "src/**"
+      - "public/**"
+      - "assets/**"
+      - "next.config.js"
+      - "package.json"
+      - "yarn.lock"
+      - "tailwind.config.js"
+      - "postcss.config.js"
+      - "tsconfig.json"
+      - ".github/workflows/deploy.yml"
   workflow_dispatch:
 
 permissions:

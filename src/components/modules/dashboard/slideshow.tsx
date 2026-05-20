@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import Autoplay from "embla-carousel-autoplay"
 
 import { driveImageUrl } from "@/apis/gdrive/client"
@@ -19,6 +20,21 @@ interface Props {
 
 const Slideshow = ({ displayItems }: Props) => {
   const items = displayItems
+
+  useEffect(() => {
+    const urls = items
+      .filter((i) => i.type === "image")
+      .map((i) => driveImageUrl(i.id))
+    const cache: HTMLImageElement[] = []
+    for (const url of urls) {
+      const img = new Image()
+      img.src = url
+      cache.push(img)
+    }
+    return () => {
+      cache.length = 0
+    }
+  }, [items])
 
   return (
     <Carousel

@@ -2,10 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { useQueryClient } from "@tanstack/react-query"
+import { DriveError, listDriveFolder } from "@/apis/gdrive/client"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import { displayItemKeys } from "@/constants/query-key-factory"
+import { parseFilename } from "@/lib/utils/filename-rules"
 import {
   clearFolderOverride,
   getDefaultFolderId,
@@ -26,11 +28,47 @@ const extractFolderId = (raw: string): string => {
   return match ? match[1] : trimmed
 }
 
+const errorMessage = (err: unknown): string => {
+  if (err instanceof DriveError) {
+    if (err.reason === "not_found")
+      return "Folder not found / フォルダが見つかりません"
+    if (err.reason === "forbidden")
+      return "Permission denied — check link sharing / アクセス権がありません — リンク共有を確認してください"
+    if (err.reason === "unauthorized")
+      return "API key rejected — check restrictions / APIキーが拒否されました"
+    if (err.reason === "rate_limited")
+      return "Rate limited, try again in a minute / レート制限中です"
+  }
+  return "Drive request failed / Drive へのリクエストに失敗しました"
+}
+
+interface PreviewItem {
+  id: string
+  name: string
+  mimeType: string
+  parsed: ReturnType<typeof parseFilename>
+}
+
+const renderType = (mimeType: string): string => {
+  if (mimeType.includes("image")) return "image / 画像"
+  if (mimeType.includes("application/json")) return "event / イベント"
+  if (mimeType.includes("application/vnd.google-apps.folder"))
+    return "folder / フォルダ"
+  return "text / テキスト"
+}
+
+const isActive = (parsed: ReturnType<typeof parseFilename>): boolean => {
+  const today = new Date().toISOString().slice(0, 10)
+  if (!parsed.from || !parsed.to) return false
+  return parsed.from <= today && parsed.to >= today
+}
+
 export default function AdminPage() {
   const queryClient = useQueryClient()
   const buildTimeFolderId = getDefaultFolderId()
   const [override, setOverride] = useState<string | null>(null)
   const [input, setInput] = useState("")
+  const [isValidating, setIsValidating] = useState(false)
 
   useEffect(() => {
     setOverride(readFolderOverride())
@@ -48,7 +86,7 @@ export default function AdminPage() {
     return url.toString()
   }, [input])
 
-  const apply = () => {
+  const apply = async () => {
     const id = extractFolderId(input)
     if (!id) {
       toast.error(
@@ -56,20 +94,48 @@ export default function AdminPage() {
       )
       return
     }
-    setFolderOverride(id)
-    setOverride(id)
-    queryClient.invalidateQueries({ queryKey: displayItemKeys.all() })
-    toast.success(
-      "Override applied (this browser only) / 上書きを適用しました（このブラウザのみ）"
-    )
+    setIsValidating(true)
+    try {
+      const result = await listDriveFolder(id)
+      const count = result.files?.length ?? 0
+      setFolderOverride(id)
+      setOverride(id)
+      queryClient.invalidateQueries({ queryKey: displayItemKeys.all() })
+      queryClient.invalidateQueries({ queryKey: ["admin-preview"] })
+      toast.success(
+        `Override applied — ${count} file${count === 1 ? "" : "s"} found / 上書きを適用しました — ${count}件のファイル`
+      )
+    } catch (err) {
+      toast.error(errorMessage(err))
+    } finally {
+      setIsValidating(false)
+    }
   }
 
   const reset = () => {
     clearFolderOverride()
     setOverride(null)
     queryClient.invalidateQueries({ queryKey: displayItemKeys.all() })
+    queryClient.invalidateQueries({ queryKey: ["admin-preview"] })
     toast.success("Reverted to default / 既定値に戻しました")
   }
+
+  const {
+    data: previewItems,
+    isLoading: isPreviewLoading,
+    error: previewError,
+    refetch: refetchPreview,
+  } = useQuery({
+    queryKey: ["admin-preview", active],
+    queryFn: async (): Promise<PreviewItem[]> => {
+      const result = await listDriveFolder(active)
+      return result.files.map((f) => ({
+        ...f,
+        parsed: parseFilename(f.name),
+      }))
+    },
+    enabled: !!active,
+  })
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
@@ -122,7 +188,7 @@ export default function AdminPage() {
         </CardContent>
       </Card>
 
-      <Card className="mb-10 border-primary/40">
+      <Card className="mb-6 border-primary/40">
         <CardHeader>
           <CardTitle className="text-base">
             Override (this browser) / 上書き（このブラウザのみ）
@@ -141,13 +207,15 @@ export default function AdminPage() {
             />
             <p className="text-xs text-muted-foreground">
               Paste the full folder URL or just the ID — the ID is extracted
-              automatically. /
-              URL全体またはIDだけを貼り付けてください。IDは自動的に抽出されます。
+              automatically. We verify access before saving. /
+              URL全体またはIDだけを貼り付けてください。保存前にアクセス確認を行います。
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button onClick={apply} disabled={!input.trim()}>
-              Apply override / 上書きを適用
+            <Button onClick={apply} disabled={!input.trim() || isValidating}>
+              {isValidating
+                ? "Checking… / 確認中…"
+                : "Apply override / 上書きを適用"}
             </Button>
             <Button variant="outline" onClick={reset} disabled={!override}>
               Reset to default / 既定値に戻す
@@ -178,11 +246,81 @@ export default function AdminPage() {
         </CardContent>
       </Card>
 
+      <Card className="mb-10">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base">
+            Folder contents / フォルダの中身
+          </CardTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => refetchPreview()}
+            disabled={isPreviewLoading}
+          >
+            {isPreviewLoading ? "Loading… / 読み込み中…" : "Refresh / 更新"}
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {previewError && (
+            <p className="text-sm text-destructive">
+              ⚠ {errorMessage(previewError)}
+            </p>
+          )}
+          {!previewError && previewItems && previewItems.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              No files in this folder. /
+              このフォルダにはファイルがありません。
+            </p>
+          )}
+          {previewItems && previewItems.length > 0 && (
+            <ul className="divide-y divide-border text-sm">
+              {previewItems.map((item) => {
+                const active = isActive(item.parsed)
+                return (
+                  <li
+                    key={item.id}
+                    className="flex items-start justify-between gap-3 py-2"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <code className="block break-all font-mono text-xs">
+                        {item.name}
+                      </code>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                        <span>{renderType(item.mimeType)}</span>
+                        {item.parsed.from && item.parsed.to && (
+                          <span>
+                            {item.parsed.from === item.parsed.to
+                              ? item.parsed.from
+                              : `${item.parsed.from} → ${item.parsed.to === "9999-12-31" ? "∞" : item.parsed.to}`}
+                          </span>
+                        )}
+                        {item.parsed.weight !== 1 && (
+                          <span>W={item.parsed.weight}</span>
+                        )}
+                        {item.parsed.conflict && (
+                          <span className="text-destructive">
+                            ⚠ {item.parsed.conflict}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <Badge
+                      variant={active ? "default" : "outline"}
+                      className="shrink-0"
+                    >
+                      {active ? "shown / 表示中" : "hidden / 非表示"}
+                    </Badge>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
       <Separator className="mb-10" />
 
-      <h2 className="mb-3 text-xl font-semibold">
-        Trust model / 信頼モデル
-      </h2>
+      <h2 className="mb-3 text-xl font-semibold">Trust model / 信頼モデル</h2>
       <p className="mb-4 text-sm text-muted-foreground">
         The board runs entirely in the browser. To read a folder it uses a
         public API key and the folder&rsquo;s link-share permission. There is

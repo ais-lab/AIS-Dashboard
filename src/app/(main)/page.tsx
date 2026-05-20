@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useEffect, useState } from "react"
 import Link from "next/link"
 import { useDisplayItems } from "@/apis/gdrive/use-display-items"
 import AppIcon from "@assets/icon.png"
@@ -16,11 +16,34 @@ import EventSlideShow from "@/components/modules/dashboard/event-slideshow"
 import Slideshow from "@/components/modules/dashboard/slideshow"
 import WeatherBadge from "@/components/modules/dashboard/weather-badge"
 
+const formatAgo = (ms: number): string => {
+  const seconds = Math.floor(ms / 1000)
+  if (seconds < 60) return `${seconds}s`
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes}m`
+  const hours = Math.floor(minutes / 60)
+  return `${hours}h`
+}
+
 export default function MainPage() {
-  const { data: displayItems, isLoading: isDisplayItemsLoading } =
-    useDisplayItems({
-      refetchInterval: duration.seconds(30),
-    })
+  const {
+    data: displayItems,
+    isLoading: isDisplayItemsLoading,
+    error,
+    dataUpdatedAt,
+    failureCount,
+  } = useDisplayItems({
+    refetchInterval: duration.seconds(30),
+    retry: 2,
+  })
+
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => {
+    if (!error) return
+    const id = setInterval(() => setNow(Date.now()), 5000)
+    return () => clearInterval(id)
+  }, [error])
+  const lastSuccessAgo = dataUpdatedAt ? formatAgo(now - dataUpdatedAt) : null
 
   const events = displayItems?.filter((item) => item.type === "event")
 
@@ -35,6 +58,13 @@ export default function MainPage() {
   return (
     <div className="mx-auto flex h-screen w-screen flex-col">
       <WeatherBadge latitude={34.8} longitude={135.56} />
+      {error && (
+        <div className="fixed left-1/2 top-12 z-20 -translate-x-1/2 rounded-md border border-destructive/40 bg-destructive/90 px-4 py-2 text-center text-xs text-destructive-foreground shadow-lg backdrop-blur">
+          Can&rsquo;t reach Drive (retry {failureCount})
+          {lastSuccessAgo && ` · last success ${lastSuccessAgo} ago`} / Driveに
+          接続できません{lastSuccessAgo && ` · 最終取得 ${lastSuccessAgo}前`}
+        </div>
+      )}
       {hasNothingToDisplay && (
         <div className="flex h-full w-full flex-col items-center justify-center gap-4 pb-8">
           <img
