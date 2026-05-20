@@ -45,6 +45,12 @@ export default function MainPage() {
   }, [error])
   const lastSuccessAgo = dataUpdatedAt ? formatAgo(now - dataUpdatedAt) : null
 
+  useEffect(() => {
+    const TWELVE_HOURS = 12 * 60 * 60 * 1000
+    const id = setTimeout(() => window.location.reload(), TWELVE_HOURS)
+    return () => clearTimeout(id)
+  }, [])
+
   const events = displayItems?.filter((item) => item.type === "event")
 
   const slideShowItems = displayItems?.filter((item) => item.type !== "event")
