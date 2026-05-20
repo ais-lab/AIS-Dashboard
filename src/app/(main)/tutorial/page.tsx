@@ -228,6 +228,11 @@ export default function GuidePage() {
           </p>
         </div>
         <div className="flex shrink-0 gap-2">
+          <Link href="/tour/">
+            <Button variant="outline" size="sm">
+              Tour / ツアー
+            </Button>
+          </Link>
           <Link href="/admin/">
             <Button variant="outline" size="sm">
               Admin / 管理

@@ -110,6 +110,11 @@ export default function MainPage() {
       </div>
 
       <div className="fixed bottom-4 left-4 z-50 flex gap-2 opacity-0 transition-opacity duration-300 ease-in-out hover:opacity-100">
+        <Link href="/tour/">
+          <Button variant="outline" size="sm">
+            Tour
+          </Button>
+        </Link>
         <Link href="/tutorial/">
           <Button variant="outline" size="sm">
             Filename guide
