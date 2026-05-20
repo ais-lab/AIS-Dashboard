@@ -440,11 +440,16 @@ export default function TourPage() {
   const hasSlides = eligibleSlides.length > 0
   const splitMode = hasEvents && hasSlides
 
+  // Demo runs at ~1.5x real speed. A 30s slide takes 20s here, a 60s slide
+  // takes 40s. Keeps the rhythm authentic — viewers see roughly what they
+  // would on the real board, just sped up a little so the page is
+  // watchable on a single visit.
+  const DEMO_SPEED = 1.5
   const computeDemoMs = (item: SampleItem | undefined): number => {
-    if (!item) return 1500
+    if (!item) return (30 * 1000) / DEMO_SPEED
     const parsedSec = parseFilename(item.name).displaySeconds
-    if (!parsedSec) return 1500
-    return Math.min(2500, Math.max(500, parsedSec * 40))
+    const realSec = parsedSec ?? (item.type === "event" ? 35 : 30)
+    return (realSec * 1000) / DEMO_SPEED
   }
 
   const [isPaused, setIsPaused] = useState(false)
@@ -798,7 +803,7 @@ export default function TourPage() {
                     </span>
                     <span className="tabular-nums">
                       Next in / 次まで{" "}
-                      {(slideRemainingMs / 1000).toFixed(1)}s (demo / デモ)
+                      {(slideRemainingMs / 1000).toFixed(1)}s (at 1.5× speed / 1.5倍速)
                     </span>
                   </>
                 )}
@@ -886,11 +891,11 @@ export default function TourPage() {
                 <li>
                   Notice the dwell time changes with <code>S</code>: the new
                   members poster (S60) lingers longer; the award flash (S10)
-                  flips by quickly. Demo time is scaled down so the tour stays
-                  watchable. /{" "}
+                  flips by quickly. The demo runs at 1.5× real speed, so the
+                  rhythm matches the real board. /{" "}
                   <code>S</code>トークンによって表示時間が変わります：新メンバー
                   ポスター（S60）は長く、受賞報告（S10）は短く表示されます。
-                  デモは縮尺を圧縮しています。
+                  デモは実機の1.5倍速で動作します。
                 </li>
                 <li>
                   When an event and a slideshow item are both active (e.g. at
