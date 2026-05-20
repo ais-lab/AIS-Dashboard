@@ -52,7 +52,7 @@ const elementCatalog: Record<ElementType, ElementMeta> = {
   },
   event: {
     label: "Countdown event / カウントダウンイベント",
-    hint: "JSON file with { name, date, address?, description?, note? }. Becomes a countdown card. / { name, date, address?, description?, note? } のJSON。カウントダウンカードになります。",
+    hint: "JSON file describing a conference, lab event, deadline, etc. Renders as a banner with the event name, date, location, and a live countdown. When the date passes it shows \"Time is up! / 時間切れ!\" until its T window closes. / 学会・研究室イベント・締切などを表すJSON。イベント名・日付・場所・カウントダウンを含むバナーとして表示され、当日を過ぎるとT期間が終わるまで「時間切れ」表示になります。",
     extensions: ["json"],
     defaultExt: "json",
   },
@@ -120,9 +120,9 @@ const examples = [
       "No date window — eligible immediately and never expires. Weight 5, so it appears 5× more often inside a folder. / 期間指定なし。無期限で表示。重み5でフォルダ内では5倍の確率で選ばれます。",
   },
   {
-    name: "launch_event_F20260901T20260901.json",
+    name: "si2025_F20251101T20251210.json",
     meaning:
-      "A countdown event JSON shown only on September 1, 2026. JSON files become countdown cards. / 2026年9月1日のみ表示されるカウントダウンイベント。JSONはカウントダウンカードになります。",
+      "A conference countdown shown from November 1 to December 10, 2025. Renders as a banner with name + date + location + live countdown. / 2025年11月1日〜12月10日に表示される学会のカウントダウン。名称・日付・場所・残り時間のバナーとして表示されます。",
   },
 ]
 
@@ -547,6 +547,40 @@ export default function GuidePage() {
           </div>
         ))}
       </div>
+
+      <h3 className="mb-4 text-lg font-semibold">
+        Countdown event JSON shape / カウントダウンイベントのJSON形式
+      </h3>
+      <pre className="mb-10 overflow-x-auto rounded-md border border-border bg-muted/30 p-4 text-xs">
+        <code>{`{
+  "name": "SI 2025",
+  "date": "2025-12-10",
+  "address": "Hiroshima, Japan",
+  "description": "Annual conference on systems integration",
+  "note": "optional extra line"
+}`}</code>
+      </pre>
+      <ul className="mb-10 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
+        <li>
+          <code>name</code> and <code>date</code> are required;{" "}
+          <code>address</code>, <code>description</code>, <code>note</code>{" "}
+          are optional. /{" "}
+          <code>name</code>と<code>date</code>は必須、それ以外は任意です。
+        </li>
+        <li>
+          The countdown ticks every second while the file is in its display
+          window. After <code>date</code> passes, it shows &ldquo;Time is up! / 時間
+          切れ!&rdquo; until the <code>T</code> token expires. /
+          表示期間中は秒単位でカウントダウンされ、<code>date</code>を過ぎると
+          <code>T</code>期間が終わるまで「時間切れ」になります。
+        </li>
+        <li>
+          If there&rsquo;s no other slideshow content, the event takes the
+          whole screen; otherwise it sits as a 180px banner at the top. /
+          他にスライドショーコンテンツがない場合はフルスクリーン表示、ある場合は
+          上部に180pxのバナーとして表示されます。
+        </li>
+      </ul>
 
       <h3 className="mb-4 text-lg font-semibold">Notes / 注意事項</h3>
       <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">

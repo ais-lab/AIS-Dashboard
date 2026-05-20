@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { Folder, FolderOpen, Image, Calendar, FileText, Layers } from "lucide-react"
+import { Calendar, FileText, Folder, FolderOpen, Image, Layers, MapPin } from "lucide-react"
 
 import { parseFilename } from "@/lib/utils/filename-rules"
 import { cn } from "@/lib/utils"
@@ -80,13 +80,24 @@ const SAMPLE_FOLDER: SampleItem[] = [
     },
   },
   {
-    name: "launch_party_F20260801T20260801.json",
+    name: "si2025_conference_F20251101T20251210.json",
     type: "event",
     preview: {
       event: {
-        name: "Product Launch / 製品ローンチ",
-        date: "2026-08-01",
-        address: "Osaka HQ / 大阪本社",
+        name: "SI 2025",
+        date: "2025-12-10",
+        address: "Hiroshima, Japan / 広島県",
+      },
+    },
+  },
+  {
+    name: "ais_retreat_F20260901T20260920.json",
+    type: "event",
+    preview: {
+      event: {
+        name: "AIS Lab Retreat / AIS研究室合宿",
+        date: "2026-09-20",
+        address: "Kyoto, Japan / 京都府",
       },
     },
   },
@@ -163,7 +174,63 @@ const TypeIcon = ({
   return <Icon className={className} />
 }
 
-const PreviewSlide = ({ item }: { item: SampleItem }) => {
+const computeTimeLeft = (targetDate: string, fromMs: number) => {
+  const target = new Date(targetDate + "T00:00:00Z").getTime()
+  const distance = target - fromMs
+  if (distance <= 0) {
+    return { ended: true, days: 0, hours: 0, minutes: 0, seconds: 0 }
+  }
+  const totalSeconds = Math.floor(distance / 1000)
+  const days = Math.floor(totalSeconds / (3600 * 24))
+  const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = Math.floor(totalSeconds % 60)
+  return { ended: false, days, hours, minutes, seconds }
+}
+
+const pad = (n: number) => n.toString().padStart(2, "0")
+
+const formatEventDate = (iso: string) => {
+  const d = new Date(iso + "T00:00:00Z")
+  const en = d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    weekday: "short",
+    timeZone: "UTC",
+  })
+  const ja = d.toLocaleDateString("ja-JP", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+    timeZone: "UTC",
+  })
+  return { en, ja }
+}
+
+const CountdownUnit = ({
+  value,
+  label,
+}: {
+  value: number
+  label: string
+}) => (
+  <div className="flex flex-col items-center">
+    <span>{pad(value)}</span>
+    <span className="text-[9px] font-normal uppercase tracking-wider text-muted-foreground">
+      {label}
+    </span>
+  </div>
+)
+
+const PreviewSlide = ({
+  item,
+  simMs,
+}: {
+  item: SampleItem
+  simMs: number
+}) => {
   if (item.type === "image" && item.preview?.gradient) {
     return (
       <div
@@ -192,14 +259,45 @@ const PreviewSlide = ({ item }: { item: SampleItem }) => {
   }
   if (item.type === "event" && item.preview?.event) {
     const ev = item.preview.event
+    const t = computeTimeLeft(ev.date, simMs)
+    const date = formatEventDate(ev.date)
     return (
-      <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-neutral-900 p-8 text-white">
-        <div className="text-xs uppercase tracking-wider opacity-70">
-          Upcoming / 予定
+      <div className="flex h-full w-full items-center justify-between gap-6 bg-background px-8 py-6">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            Upcoming / 予定
+          </div>
+          <div className="truncate text-2xl font-bold leading-tight">
+            {ev.name}
+          </div>
+          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <Calendar className="size-3" />
+            <span>
+              {date.en} / {date.ja}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <MapPin className="size-3" />
+            <span>{ev.address}</span>
+          </div>
         </div>
-        <div className="text-3xl font-bold">{ev.name}</div>
-        <div className="text-sm opacity-90">{ev.date}</div>
-        <div className="text-xs opacity-70">{ev.address}</div>
+        <div className="shrink-0">
+          {t.ended ? (
+            <div className="text-xl font-bold text-foreground">
+              Time is up! / 時間切れ!
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 font-mono text-3xl font-bold tabular-nums">
+              <CountdownUnit value={t.days} label="Days / 日" />
+              <span className="opacity-40">:</span>
+              <CountdownUnit value={t.hours} label="Hrs / 時" />
+              <span className="opacity-40">:</span>
+              <CountdownUnit value={t.minutes} label="Min / 分" />
+              <span className="opacity-40">:</span>
+              <CountdownUnit value={t.seconds} label="Sec / 秒" />
+            </div>
+          )}
+        </div>
       </div>
     )
   }
@@ -494,7 +592,7 @@ export default function TourPage() {
                   key={displayed.name}
                   className="size-full animate-in fade-in zoom-in-95 duration-500"
                 >
-                  <PreviewSlide item={displayed} />
+                  <PreviewSlide item={displayed} simMs={simMs} />
                 </div>
               ) : (
                 <div className="flex size-full flex-col items-center justify-center gap-2 text-muted-foreground">
@@ -546,19 +644,25 @@ export default function TourPage() {
             <CardContent>
               <ul className="list-disc space-y-1.5 pl-5 text-xs text-muted-foreground">
                 <li>
-                  Slide to <strong>January 2026</strong> — Winter Sale becomes
-                  active. / 2026年1月に動かすと冬セールが有効になります。
+                  Slide to <strong>December 2025</strong> — SI 2025 conference
+                  banner appears with a live countdown to Dec 10. /
+                  2025年12月に動かすとSI 2025のカウントダウンが表示されます。
                 </li>
                 <li>
-                  Slide to <strong>December 22, 2026</strong> — Christmas
-                  appears, Summer Sale is gone. / 2026年12月22日に動かすと
-                  クリスマスが表示され、夏セールは消えます。
+                  Slide past <strong>Dec 10, 2025</strong> — countdown switches
+                  to &ldquo;Time is up! / 時間切れ!&rdquo; until the event drops out of
+                  its window on Dec 11. / 2025年12月10日を過ぎると「時間切れ」
+                  表示になります。
                 </li>
                 <li>
-                  Watch the <code>tips/</code> folder — refreshing the slide
-                  re-rolls the weighted pick (W5 wins most). /{" "}
-                  <code>tips/</code>フォルダではスライド更新ごとに重み付き
-                  抽選が再実行されます（W5が最頻）。
+                  Slide to <strong>September 2026</strong> — AIS Lab Retreat
+                  becomes active. / 2026年9月に動かすと研究室合宿が表示されます。
+                </li>
+                <li>
+                  Watch the <code>tips/</code> folder — each rotation re-rolls
+                  the weighted pick (W5 wins most). /{" "}
+                  <code>tips/</code>フォルダではローテーションごとに重み付き抽選が
+                  再実行されます（W5が最頻）。
                 </li>
               </ul>
             </CardContent>
