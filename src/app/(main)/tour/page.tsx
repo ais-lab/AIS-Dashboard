@@ -107,6 +107,17 @@ const SAMPLE_FOLDER: SampleItem[] = [
     },
   },
   {
+    name: "weekly_seminar_event_F20260101T20261231.json",
+    type: "event",
+    preview: {
+      event: {
+        name: "Weekly Lab Seminar / 週次セミナー",
+        date: "2026-12-18",
+        address: "Room 401, Building 5 / 401号室",
+      },
+    },
+  },
+  {
     name: "reading_group/",
     type: "folder",
     children: [
@@ -379,85 +390,103 @@ export default function TourPage() {
     return Array.from(set).sort()
   }, [])
 
-  const eligibleTopLevel = useMemo(() => {
-    return SAMPLE_FOLDER.filter((item) => {
-      if (item.type === "folder") {
-        return item.children?.some((c) => {
-          const cn = parseFilename(c.name)
-          if (!cn.from || !cn.to) return false
-          return cn.from <= simIso && cn.to >= simIso
-        })
-      }
-      const p = parseFilename(item.name)
-      if (!p.from || !p.to) return false
-      return p.from <= simIso && p.to >= simIso
-    })
-  }, [simIso])
+  const isEligible = (item: SampleItem): boolean => {
+    if (item.type === "folder") {
+      return !!item.children?.some((c) => {
+        const cn = parseFilename(c.name)
+        if (!cn.from || !cn.to) return false
+        return cn.from <= simIso && cn.to >= simIso
+      })
+    }
+    const p = parseFilename(item.name)
+    if (!p.from || !p.to) return false
+    return p.from <= simIso && p.to >= simIso
+  }
 
-  const [currentIdx, setCurrentIdx] = useState(0)
-  const [folderPick, setFolderPick] = useState<SampleItem | null>(null)
-  const [isPaused, setIsPaused] = useState(false)
+  const eligibleEvents = useMemo(
+    () => SAMPLE_FOLDER.filter((i) => i.type === "event" && isEligible(i)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [simIso]
+  )
+  const eligibleSlides = useMemo(
+    () => SAMPLE_FOLDER.filter((i) => i.type !== "event" && isEligible(i)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [simIso]
+  )
 
-  useEffect(() => {
-    setCurrentIdx(0)
-  }, [eligibleTopLevel.length])
+  const hasEvents = eligibleEvents.length > 0
+  const hasSlides = eligibleSlides.length > 0
+  const splitMode = hasEvents && hasSlides
 
-  const currentTopItem = eligibleTopLevel[currentIdx]
-
-  // Demo speed: aggressively compressed so item changes are immediately
-  // visible. 1 real second ≈ 40ms, clamped to [500ms, 2500ms]. Default
-  // (no S token) is 1.5s. So a 30s slide → 1.2s, a 60s slide → 2.4s, a
-  // 10s slide → 500ms (just enough to register the change).
-  const demoMs = (() => {
-    const parsedSec = currentTopItem
-      ? parseFilename(currentTopItem.name).displaySeconds
-      : undefined
+  const computeDemoMs = (item: SampleItem | undefined): number => {
+    if (!item) return 1500
+    const parsedSec = parseFilename(item.name).displaySeconds
     if (!parsedSec) return 1500
     return Math.min(2500, Math.max(500, parsedSec * 40))
-  })()
+  }
+
+  const [isPaused, setIsPaused] = useState(false)
+
+  // Slideshow track
+  const [slideIdx, setSlideIdx] = useState(0)
+  useEffect(() => setSlideIdx(0), [eligibleSlides.length])
+  const currentSlide = eligibleSlides[slideIdx]
+  const slideDemoMs = computeDemoMs(currentSlide)
 
   useEffect(() => {
-    if (isPaused || eligibleTopLevel.length === 0) return
+    if (isPaused || !hasSlides) return
     const id = setTimeout(() => {
-      setCurrentIdx((i) => (i + 1) % eligibleTopLevel.length)
-    }, demoMs)
+      setSlideIdx((i) => (i + 1) % eligibleSlides.length)
+    }, slideDemoMs)
     return () => clearTimeout(id)
-  }, [isPaused, eligibleTopLevel.length, demoMs, currentIdx])
+  }, [isPaused, hasSlides, eligibleSlides.length, slideDemoMs, slideIdx])
 
-  // Progress for the current slide: 0 -> 1 over demoMs, ticks every 50ms.
-  const [progress, setProgress] = useState(0)
+  const [slideProgress, setSlideProgress] = useState(0)
   useEffect(() => {
-    if (isPaused || eligibleTopLevel.length === 0) {
-      return
-    }
-    setProgress(0)
+    if (isPaused || !hasSlides) return
+    setSlideProgress(0)
     const start = performance.now()
     const id = setInterval(() => {
-      const elapsed = performance.now() - start
-      const p = Math.min(1, elapsed / demoMs)
-      setProgress(p)
+      setSlideProgress(Math.min(1, (performance.now() - start) / slideDemoMs))
     }, 50)
     return () => clearInterval(id)
-  }, [currentIdx, demoMs, isPaused, eligibleTopLevel.length])
+  }, [slideIdx, slideDemoMs, isPaused, hasSlides])
 
-  const realSeconds = currentTopItem
-    ? parseFilename(currentTopItem.name).displaySeconds
-    : undefined
-  const realSecondsLabel = realSeconds ?? (currentTopItem?.type === "event" ? 35 : 30)
-  const remainingDemoMs = Math.max(0, demoMs - demoMs * progress)
+  // Event track (runs independently)
+  const [eventIdx, setEventIdx] = useState(0)
+  useEffect(() => setEventIdx(0), [eligibleEvents.length])
+  const currentEvent = eligibleEvents[eventIdx]
+  const eventDemoMs = computeDemoMs(currentEvent)
 
   useEffect(() => {
-    if (currentTopItem?.type === "folder" && currentTopItem.children) {
-      const eligibleChildren = currentTopItem.children.filter((c) =>
+    if (isPaused || !hasEvents || eligibleEvents.length < 2) return
+    const id = setTimeout(() => {
+      setEventIdx((i) => (i + 1) % eligibleEvents.length)
+    }, eventDemoMs)
+    return () => clearTimeout(id)
+  }, [isPaused, hasEvents, eligibleEvents.length, eventDemoMs, eventIdx])
+
+  // Folder picking — bound to the slideshow track
+  const [folderPick, setFolderPick] = useState<SampleItem | null>(null)
+  useEffect(() => {
+    if (currentSlide?.type === "folder" && currentSlide.children) {
+      const eligibleChildren = currentSlide.children.filter((c) =>
         isItemActive(c, simIso)
       )
       setFolderPick(weightedPick(eligibleChildren))
     } else {
       setFolderPick(null)
     }
-  }, [currentTopItem, simIso])
+  }, [currentSlide, simIso])
 
-  const displayed = folderPick ?? currentTopItem
+  const displayedSlide = folderPick ?? currentSlide
+
+  // Real-seconds label for the slideshow side
+  const slideRealSeconds = currentSlide
+    ? parseFilename(currentSlide.name).displaySeconds
+    : undefined
+  const slideRealSecondsLabel = slideRealSeconds ?? 30
+  const slideRemainingMs = Math.max(0, slideDemoMs - slideDemoMs * slideProgress)
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12">
@@ -566,12 +595,12 @@ export default function TourPage() {
             <ul className="space-y-0.5 text-sm">
               {SAMPLE_FOLDER.map((item) => {
                 const active =
-                  item.type === "folder"
-                    ? eligibleTopLevel.includes(item)
-                    : isItemActive(item, simIso)
-                const isCurrent =
-                  currentTopItem === item ||
+                  item.type === "folder" ? isEligible(item) : isItemActive(item, simIso)
+                const isCurrentSlide =
+                  currentSlide === item ||
                   (item.children && item.children.includes(folderPick as any))
+                const isCurrentEvent = currentEvent === item
+                const isCurrent = isCurrentSlide || isCurrentEvent
 
                 return (
                   <li key={item.name}>
@@ -603,7 +632,12 @@ export default function TourPage() {
                           out of window / 期間外
                         </Badge>
                       )}
-                      {isCurrent && !folderPick && (
+                      {isCurrentEvent && (
+                        <Badge className="shrink-0 text-[10px]">
+                          event / イベント
+                        </Badge>
+                      )}
+                      {isCurrentSlide && !folderPick && (
                         <Badge className="shrink-0 text-[10px]">
                           on screen / 表示中
                         </Badge>
@@ -673,12 +707,34 @@ export default function TourPage() {
         <div className="space-y-4">
           <Card className="overflow-hidden">
             <div className="relative aspect-video w-full bg-neutral-100">
-              {displayed ? (
-                <div
-                  key={displayed.name}
-                  className="size-full animate-in fade-in zoom-in-95 duration-500"
-                >
-                  <PreviewSlide item={displayed} simMs={simMs} />
+              {hasEvents || hasSlides ? (
+                <div className="flex size-full flex-col">
+                  {hasEvents && (
+                    <div
+                      key={`ev-${currentEvent?.name}`}
+                      className={cn(
+                        "w-full overflow-hidden border-b border-border animate-in fade-in zoom-in-95 duration-500",
+                        splitMode ? "h-1/3" : "h-full"
+                      )}
+                    >
+                      {currentEvent && (
+                        <PreviewSlide item={currentEvent} simMs={simMs} />
+                      )}
+                    </div>
+                  )}
+                  {hasSlides && (
+                    <div
+                      key={`sl-${displayedSlide?.name}`}
+                      className={cn(
+                        "relative w-full overflow-hidden animate-in fade-in zoom-in-95 duration-500",
+                        splitMode ? "h-2/3" : "h-full"
+                      )}
+                    >
+                      {displayedSlide && (
+                        <PreviewSlide item={displayedSlide} simMs={simMs} />
+                      )}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="flex size-full flex-col items-center justify-center gap-2 text-muted-foreground">
@@ -689,25 +745,38 @@ export default function TourPage() {
                   </p>
                 </div>
               )}
-              {displayed && (
+              {hasSlides && (
                 <div className="absolute inset-x-0 bottom-0 h-1 bg-foreground/10">
                   <div
                     className="h-full bg-primary transition-[width] duration-75 ease-linear"
-                    style={{ width: `${progress * 100}%` }}
+                    style={{ width: `${slideProgress * 100}%` }}
                   />
                 </div>
               )}
             </div>
-            {displayed && (
-              <div className="flex items-center justify-between border-t border-border bg-background/60 px-3 py-1.5 text-[11px] text-muted-foreground">
-                <span>
-                  On screen for / 表示時間 <strong>{realSecondsLabel}s</strong>
-                  {!realSeconds && " (default / 既定)"}
-                </span>
-                <span className="tabular-nums">
-                  Next in / 次まで {(remainingDemoMs / 1000).toFixed(1)}s (demo /
-                  デモ)
-                </span>
+            {(hasSlides || hasEvents) && (
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-border bg-background/60 px-3 py-1.5 text-[11px] text-muted-foreground">
+                {splitMode && (
+                  <span className="text-foreground/80">
+                    Both an event banner and the slideshow are on screen —
+                    they rotate independently. /
+                    イベントバナーとスライドショーは同時に表示され、
+                    それぞれ独立して切り替わります。
+                  </span>
+                )}
+                {hasSlides && (
+                  <>
+                    <span>
+                      Slide for / スライド表示時間{" "}
+                      <strong>{slideRealSecondsLabel}s</strong>
+                      {!slideRealSeconds && " (default / 既定)"}
+                    </span>
+                    <span className="tabular-nums">
+                      Next in / 次まで{" "}
+                      {(slideRemainingMs / 1000).toFixed(1)}s (demo / デモ)
+                    </span>
+                  </>
+                )}
               </div>
             )}
           </Card>
@@ -718,21 +787,37 @@ export default function TourPage() {
                 What you&rsquo;re seeing / 表示中のファイル
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              {displayed ? (
-                <>
-                  <TokenExplainer name={displayed.name} />
-                  {folderPick && currentTopItem?.type === "folder" && (
+            <CardContent className="space-y-4 text-sm">
+              {hasEvents && currentEvent && (
+                <div className="space-y-2">
+                  {splitMode && (
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Event banner / イベントバナー
+                    </p>
+                  )}
+                  <TokenExplainer name={currentEvent.name} />
+                </div>
+              )}
+              {hasSlides && displayedSlide && (
+                <div className="space-y-2">
+                  {splitMode && (
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Slideshow / スライドショー
+                    </p>
+                  )}
+                  <TokenExplainer name={displayedSlide.name} />
+                  {folderPick && currentSlide?.type === "folder" && (
                     <p className="text-xs text-muted-foreground">
-                      Picked from <code>{currentTopItem.name}</code> using
-                      weighted random across {currentTopItem.children?.length}{" "}
+                      Picked from <code>{currentSlide.name}</code> using
+                      weighted random across {currentSlide.children?.length}{" "}
                       children. /{" "}
-                      <code>{currentTopItem.name}</code>
+                      <code>{currentSlide.name}</code>
                       の中から重み付きランダムで選択されました。
                     </p>
                   )}
-                </>
-              ) : (
+                </div>
+              )}
+              {!hasEvents && !hasSlides && (
                 <p className="text-xs text-muted-foreground">
                   Drag the slider to a date when an item is in its window. /
                   期間内のアイテムがある日付にスライダーを動かしてください。
@@ -781,6 +866,15 @@ export default function TourPage() {
                   <code>S</code>トークンによって表示時間が変わります：新メンバー
                   ポスター（S60）は長く、受賞報告（S10）は短く表示されます。
                   デモは縮尺を圧縮しています。
+                </li>
+                <li>
+                  When an event and a slideshow item are both active (e.g. at
+                  today&rsquo;s date), the board splits — event banner on top,
+                  slideshow below. They rotate independently, just like the
+                  real screen. /
+                  イベントとスライドショーの両方が有効な日付（例: 今日）
+                  では、上部にイベントバナー、下部にスライドショーが
+                  分割表示されます。実機と同じく独立して切り替わります。
                 </li>
               </ul>
             </CardContent>
