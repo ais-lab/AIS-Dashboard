@@ -244,9 +244,11 @@ const CountdownUnit = ({
 const PreviewSlide = ({
   item,
   simMs,
+  compact = false,
 }: {
   item: SampleItem
   simMs: number
+  compact?: boolean
 }) => {
   if (item.type === "image") {
     return (
@@ -280,32 +282,52 @@ const PreviewSlide = ({
     const t = computeTimeLeft(ev.date, simMs)
     const date = formatEventDate(ev.date)
     return (
-      <div className="flex h-full w-full items-center justify-between gap-6 bg-background px-8 py-6">
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+      <div
+        className={cn(
+          "flex h-full w-full items-center justify-between gap-4 bg-background",
+          compact ? "px-4 py-2" : "px-8 py-6"
+        )}
+      >
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <div className="text-[9px] uppercase tracking-wider text-muted-foreground">
             Upcoming / 予定
           </div>
-          <div className="truncate text-2xl font-bold leading-tight">
+          <div
+            className={cn(
+              "truncate font-bold leading-tight",
+              compact ? "text-sm" : "text-2xl"
+            )}
+          >
             {ev.name}
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
             <Calendar className="size-3" />
             <span>
               {date.en} / {date.ja}
             </span>
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
             <MapPin className="size-3" />
             <span>{ev.address}</span>
           </div>
         </div>
         <div className="shrink-0">
           {t.ended ? (
-            <div className="text-xl font-bold text-foreground">
+            <div
+              className={cn(
+                "font-bold text-foreground",
+                compact ? "text-sm" : "text-xl"
+              )}
+            >
               Time is up! / 時間切れ!
             </div>
           ) : (
-            <div className="flex items-center gap-2 font-mono text-3xl font-bold tabular-nums">
+            <div
+              className={cn(
+                "flex items-center gap-1.5 font-mono font-bold tabular-nums",
+                compact ? "gap-1 text-base" : "gap-2 text-3xl"
+              )}
+            >
               <CountdownUnit value={t.days} label="Days / 日" />
               <span className="opacity-40">:</span>
               <CountdownUnit value={t.hours} label="Hrs / 時" />
@@ -714,11 +736,15 @@ export default function TourPage() {
                       key={`ev-${currentEvent?.name}`}
                       className={cn(
                         "w-full overflow-hidden border-b border-border animate-in fade-in zoom-in-95 duration-500",
-                        splitMode ? "h-1/3" : "h-full"
+                        splitMode ? "h-[20%] min-h-[60px]" : "h-full"
                       )}
                     >
                       {currentEvent && (
-                        <PreviewSlide item={currentEvent} simMs={simMs} />
+                        <PreviewSlide
+                          item={currentEvent}
+                          simMs={simMs}
+                          compact={splitMode}
+                        />
                       )}
                     </div>
                   )}
@@ -726,8 +752,7 @@ export default function TourPage() {
                     <div
                       key={`sl-${displayedSlide?.name}`}
                       className={cn(
-                        "relative w-full overflow-hidden animate-in fade-in zoom-in-95 duration-500",
-                        splitMode ? "h-2/3" : "h-full"
+                        "relative w-full flex-1 overflow-hidden animate-in fade-in zoom-in-95 duration-500"
                       )}
                     >
                       {displayedSlide && (
