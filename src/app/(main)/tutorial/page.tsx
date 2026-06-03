@@ -573,16 +573,16 @@ export default function GuidePage() {
               <Label htmlFor="from">
                 From date (optional) / 開始日（任意）
               </Label>
+              <p className="flex min-h-[2.5rem] items-center text-xs text-muted-foreground">
+                Leave blank to start being shown immediately. /
+                空欄の場合は即時表示されます。
+              </p>
               <Input
                 id="from"
                 type="date"
                 value={from}
                 onChange={(e) => setFrom(e.target.value)}
               />
-              <p className="text-xs text-muted-foreground">
-                Leave blank to start being shown immediately. /
-                空欄の場合は即時表示されます。
-              </p>
             </div>
 
             <div className="space-y-1.5">
@@ -591,7 +591,7 @@ export default function GuidePage() {
                 value={endMode}
                 onValueChange={(v) => setEndMode(v as EndMode)}
               >
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid h-10 w-full grid-cols-3">
                   <TabsTrigger value="to">To date / 終了日</TabsTrigger>
                   <TabsTrigger value="duration">Duration / 期間</TabsTrigger>
                   <TabsTrigger value="forever">Forever / 無期限</TabsTrigger>
