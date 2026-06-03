@@ -52,12 +52,13 @@ export default function MainPage() {
   }, [])
 
   const events = displayItems?.filter((item) => item.type === "event")
+  const hasEvents = events && events.length > 0
 
   const slideShowItems = displayItems?.filter((item) => item.type !== "event")
   const hasSlideShowItems = slideShowItems && slideShowItems.length > 0
 
   const hasNothingToDisplay =
-    !events && !hasSlideShowItems && !isDisplayItemsLoading
+    !hasEvents && !hasSlideShowItems && !isDisplayItemsLoading
 
   if (isDisplayItemsLoading) return <LoadingPage />
 
@@ -81,7 +82,7 @@ export default function MainPage() {
           <Label className="text-center text-6xl">Welcome to AIS Lab</Label>
         </div>
       )}
-      {events ? (
+      {hasEvents ? (
         <EventSlideShow
           displayItems={events}
           type={hasSlideShowItems ? "normal" : "fullscreen"}
