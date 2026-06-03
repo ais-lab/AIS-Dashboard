@@ -25,7 +25,16 @@ const formatAgo = (ms: number): string => {
   return `${hours}h`
 }
 
+const isDemoMode = (): boolean => {
+  if (typeof window === "undefined") return false
+  return new URL(window.location.href).searchParams.get("mode") === "demo"
+}
+
 export default function MainPage() {
+  const refetchInterval = isDemoMode()
+    ? duration.seconds(10)
+    : duration.seconds(30)
+
   const {
     data: displayItems,
     isLoading: isDisplayItemsLoading,
@@ -33,7 +42,7 @@ export default function MainPage() {
     dataUpdatedAt,
     failureCount,
   } = useDisplayItems({
-    refetchInterval: duration.seconds(30),
+    refetchInterval,
     retry: 2,
   })
 
