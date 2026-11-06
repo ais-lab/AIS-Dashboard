@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Filename guide / ファイル名ガイド",
+  title: "How to use / 使い方",
 }
 
 export default function TutorialLayout({

@@ -2,12 +2,18 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { DriveError, listDriveFolder } from "@/apis/gdrive/client"
+import {
+  DriveError,
+  fetchDriveFileJson,
+  listDriveFolder,
+} from "@/apis/gdrive/client"
+import { displayItemKeys } from "@/constants/query-key-factory"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
-import { displayItemKeys } from "@/constants/query-key-factory"
-import { parseFilename } from "@/lib/utils/filename-rules"
+import { CountdownEvent } from "@/types/models"
+import { isEventOver } from "@/lib/utils/event"
+import { parseFilename, todayIso } from "@/lib/utils/filename-rules"
 import {
   clearFolderOverride,
   getDefaultFolderId,
@@ -20,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { MembersPanel } from "@/components/modules/admin/members-panel"
 
 const extractFolderId = (raw: string): string => {
   const trimmed = raw.trim()
@@ -47,6 +54,7 @@ interface PreviewItem {
   name: string
   mimeType: string
   parsed: ReturnType<typeof parseFilename>
+  eventDate?: string
 }
 
 const renderType = (mimeType: string): string => {
@@ -58,7 +66,7 @@ const renderType = (mimeType: string): string => {
 }
 
 const isActive = (parsed: ReturnType<typeof parseFilename>): boolean => {
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayIso()
   if (!parsed.from || !parsed.to) return false
   return parsed.from <= today && parsed.to >= today
 }
@@ -129,10 +137,17 @@ export default function AdminPage() {
     queryKey: ["admin-preview", active],
     queryFn: async (): Promise<PreviewItem[]> => {
       const result = await listDriveFolder(active)
-      return result.files.map((f) => ({
-        ...f,
-        parsed: parseFilename(f.name),
-      }))
+      return Promise.all(
+        result.files.map(async (f) => {
+          let eventDate: string | undefined
+          if (f.mimeType.includes("application/json")) {
+            try {
+              eventDate = (await fetchDriveFileJson<CountdownEvent>(f.id)).date
+            } catch {}
+          }
+          return { ...f, parsed: parseFilename(f.name), eventDate }
+        })
+      )
     },
     enabled: !!active,
   })
@@ -153,6 +168,8 @@ export default function AdminPage() {
           </Button>
         </Link>
       </div>
+
+      <MembersPanel />
 
       <Card className="mb-6">
         <CardHeader>
@@ -188,7 +205,7 @@ export default function AdminPage() {
         </CardContent>
       </Card>
 
-      <Card className="mb-6 border-primary/40">
+      <Card className="border-primary/40 mb-6">
         <CardHeader>
           <CardTitle className="text-base">
             Override (this browser) / 上書き（このブラウザのみ）
@@ -268,14 +285,15 @@ export default function AdminPage() {
           )}
           {!previewError && previewItems && previewItems.length === 0 && (
             <p className="text-sm text-muted-foreground">
-              No files in this folder. /
-              このフォルダにはファイルがありません。
+              No files in this folder. / このフォルダにはファイルがありません。
             </p>
           )}
           {previewItems && previewItems.length > 0 && (
             <ul className="divide-y divide-border text-sm">
               {previewItems.map((item) => {
-                const active = isActive(item.parsed)
+                const eventOver =
+                  !!item.eventDate && isEventOver(item.eventDate)
+                const active = isActive(item.parsed) && !eventOver
                 return (
                   <li
                     key={item.id}
@@ -296,6 +314,11 @@ export default function AdminPage() {
                         )}
                         {item.parsed.weight !== 1 && (
                           <span>W={item.parsed.weight}</span>
+                        )}
+                        {eventOver && (
+                          <span>
+                            Event ended {item.eventDate} / イベント終了
+                          </span>
                         )}
                         {item.parsed.conflict && (
                           <span className="text-destructive">
@@ -320,11 +343,44 @@ export default function AdminPage() {
 
       <Separator className="mb-10" />
 
+      <h2 className="mb-3 text-xl font-semibold">
+        Start the board on the monitor / モニターでボードを自動起動する
+      </h2>
+      <p className="mb-4 text-sm text-muted-foreground">
+        Run this once on the computer behind the monitor. It opens the board
+        full screen now and at every login. Then turn on automatic login, so the
+        board comes back by itself after a restart. /
+        モニターに接続されたPCで一度だけ実行してください。今すぐ、そして以後ログインのたびにボードが全画面で開きます。再起動後も自動で表示されるよう、自動ログインも有効にしてください。
+      </p>
+      <p className="mb-1 text-xs text-muted-foreground">macOS / Linux</p>
+      <code className="mb-3 block break-all rounded bg-muted px-3 py-2 font-mono text-xs">
+        curl -fsSL
+        https://raw.githubusercontent.com/ais-lab/AIS-Dashboard/main/kiosk/install.sh
+        | bash
+      </code>
+      <p className="mb-1 text-xs text-muted-foreground">Windows (PowerShell)</p>
+      <code className="mb-4 block break-all rounded bg-muted px-3 py-2 font-mono text-xs">
+        irm
+        https://raw.githubusercontent.com/ais-lab/AIS-Dashboard/main/kiosk/install.ps1
+        | iex
+      </code>
+      <p className="mb-10 text-sm text-muted-foreground">
+        How to quit, remove it, and more:{" "}
+        <a
+          href="https://github.com/ais-lab/AIS-Dashboard/tree/main/kiosk"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline"
+        >
+          kiosk guide / キオスクガイド
+        </a>
+      </p>
+
       <h2 className="mb-3 text-xl font-semibold">Trust model / 信頼モデル</h2>
       <p className="mb-4 text-sm text-muted-foreground">
         The board runs entirely in the browser. To read a folder it uses a
-        public API key and the folder&rsquo;s link-share permission. There is
-        no server. /
+        public API key and the folder&rsquo;s link-share permission. There is no
+        server. /
         ボードは完全にブラウザ上で動作します。フォルダの読み込みには公開APIキーと
         フォルダのリンク共有権限を使用します。サーバーはありません。
       </p>
@@ -340,16 +396,14 @@ export default function AdminPage() {
         <li>
           <strong>Specific people → Editor.</strong> Add the Google accounts of
           content managers in Drive&rsquo;s share dialog. Only they can upload,
-          rename, or delete files. /{" "}
-          <strong>特定のユーザー → 編集者。</strong>
+          rename, or delete files. / <strong>特定のユーザー → 編集者。</strong>
           コンテンツ管理者のGoogleアカウントをDriveの共有ダイアログから
           追加してください。アップロード・改名・削除が可能になります。
         </li>
         <li>
           <strong>API key restriction.</strong> The Google Cloud API key is
           restricted by HTTP referrer to the Pages domain — it cannot be reused
-          on other origins. /{" "}
-          <strong>APIキー制限。</strong>
+          on other origins. / <strong>APIキー制限。</strong>
           Google CloudのAPIキーはHTTPリファラでPagesドメインに制限されており、
           他のオリジンからは利用できません。
         </li>
@@ -361,21 +415,21 @@ export default function AdminPage() {
       <ol className="mb-10 list-decimal space-y-3 pl-5 text-sm">
         <li>
           In Google Drive, create the folder. Open it and copy the URL —
-          everything after <code>/folders/</code> is the folder ID. /
-          Google Driveでフォルダを作成し、URLをコピー。<code>/folders/</code>
+          everything after <code>/folders/</code> is the folder ID. / Google
+          Driveでフォルダを作成し、URLをコピー。<code>/folders/</code>
           以降がフォルダIDです。
         </li>
         <li>
           Click <strong>Share</strong> → <em>General access</em>: set to{" "}
           <strong>Anyone with the link</strong> with role{" "}
-          <strong>Viewer</strong>. /{" "}
-          <strong>共有</strong>をクリック → <em>一般的なアクセス</em>を
-          <strong>リンクを知っている全員</strong>、ロールを
+          <strong>Viewer</strong>. / <strong>共有</strong>をクリック →{" "}
+          <em>一般的なアクセス</em>を<strong>リンクを知っている全員</strong>
+          、ロールを
           <strong>閲覧者</strong>に設定。
         </li>
         <li>
-          Still in the share dialog, add the Google accounts that should be
-          able to upload/edit. Give them role <strong>Editor</strong>. /
+          Still in the share dialog, add the Google accounts that should be able
+          to upload/edit. Give them role <strong>Editor</strong>. /
           同じ共有ダイアログで、アップロード・編集権限を渡したいGoogle
           アカウントを追加し、ロールを<strong>編集者</strong>に。
         </li>
@@ -406,9 +460,8 @@ export default function AdminPage() {
           <strong>Variables</strong>。
         </li>
         <li>
-          Edit <code>NEXT_PUBLIC_DRIVE_FOLDER_ID</code> and paste the new
-          folder ID. Save. /{" "}
-          <code>NEXT_PUBLIC_DRIVE_FOLDER_ID</code>
+          Edit <code>NEXT_PUBLIC_DRIVE_FOLDER_ID</code> and paste the new folder
+          ID. Save. / <code>NEXT_PUBLIC_DRIVE_FOLDER_ID</code>
           を編集し、新しいフォルダIDを保存します。
         </li>
         <li>
@@ -420,8 +473,8 @@ export default function AdminPage() {
           ない全員に新しいフォルダが適用されます。
         </li>
         <li>
-          Optional: clear the local override above so this browser also picks
-          up the new default. /
+          Optional: clear the local override above so this browser also picks up
+          the new default. /
           任意：上のローカル上書きをリセットして、このブラウザにも
           新しい既定値を反映できます。
         </li>
@@ -443,28 +496,27 @@ export default function AdminPage() {
         <li>
           Create the new folder in Drive. Set sharing to{" "}
           <strong>Anyone with the link – Viewer</strong> and add the same{" "}
-          <strong>Editors</strong> as before. /
-          Driveで新しいフォルダを作成し、<strong>リンクを知っている全員 –
-          閲覧者</strong>に設定。同じ<strong>編集者</strong>を追加します。
+          <strong>Editors</strong> as before. / Driveで新しいフォルダを作成し、
+          <strong>リンクを知っている全員 – 閲覧者</strong>に設定。同じ
+          <strong>編集者</strong>を追加します。
         </li>
         <li>
           In the old folder, select all files (Ctrl/Cmd+A) → right-click →{" "}
           <strong>Move to</strong> → pick the new folder. Drive moves them
-          without re-uploading. /
-          旧フォルダで全選択 → 右クリック → <strong>移動</strong>{" "}
-          → 新しいフォルダを選択。Driveが再アップロード無しで移動します。
+          without re-uploading. / 旧フォルダで全選択 → 右クリック →{" "}
+          <strong>移動</strong> →
+          新しいフォルダを選択。Driveが再アップロード無しで移動します。
         </li>
         <li>
-          Paste the new folder ID into the override box above to verify on
-          this browser first. /
+          Paste the new folder ID into the override box above to verify on this
+          browser first. /
           上の上書きボックスに新しいフォルダIDを貼り付けて、このブラウザで
           先に動作確認します。
         </li>
         <li>
           When you&rsquo;re happy, update the{" "}
           <code>NEXT_PUBLIC_DRIVE_FOLDER_ID</code> repo variable (steps above)
-          and re-run the deploy workflow. /
-          問題なければ、上の手順で
+          and re-run the deploy workflow. / 問題なければ、上の手順で
           <code>NEXT_PUBLIC_DRIVE_FOLDER_ID</code>
           のリポジトリ変数を更新し、デプロイワークフローを再実行します。
         </li>
@@ -495,8 +547,8 @@ export default function AdminPage() {
             Google Cloud Console
           </a>{" "}
           → select (or create) a project → <strong>APIs &amp; Services</strong>{" "}
-          → <strong>Library</strong> → enable{" "}
-          <strong>Google Drive API</strong>. /{" "}
+          → <strong>Library</strong> → enable <strong>Google Drive API</strong>.
+          /{" "}
           <a
             href="https://console.cloud.google.com/"
             target="_blank"
@@ -510,27 +562,27 @@ export default function AdminPage() {
           <strong>Google Drive API</strong>を有効化。
         </li>
         <li>
-          <strong>Credentials</strong> → <strong>+ Create credentials</strong>{" "}
-          → <strong>API key</strong>. Copy the key. /{" "}
-          <strong>認証情報</strong> → <strong>+ 認証情報を作成</strong> →{" "}
-          <strong>APIキー</strong>。キーをコピーします。
+          <strong>Credentials</strong> → <strong>+ Create credentials</strong> →{" "}
+          <strong>API key</strong>. Copy the key. / <strong>認証情報</strong> →{" "}
+          <strong>+ 認証情報を作成</strong> → <strong>APIキー</strong>
+          。キーをコピーします。
         </li>
         <li>
           Click the key → <strong>Edit</strong>:
           <ul className="mt-1 list-disc space-y-1 pl-5">
             <li>
               <em>Application restrictions</em> → <strong>Websites</strong> →
-              add your Pages URL with <code>/*</code> (and{" "}
-              <code>http://localhost:3000/*</code> for dev). /{" "}
+              add your Pages URL with <code>{"/*"}</code> (and{" "}
+              <code>{"http://localhost:3000/*"}</code> for dev). /{" "}
               <em>アプリケーション制限</em> → <strong>ウェブサイト</strong> →
-              Pages URL（末尾<code>/*</code>）と{" "}
-              <code>http://localhost:3000/*</code>を追加。
+              Pages URL（末尾<code>{"/*"}</code>）と{" "}
+              <code>{"http://localhost:3000/*"}</code>を追加。
             </li>
             <li>
               <em>API restrictions</em> → <strong>Restrict key</strong> → tick
-              only <strong>Google Drive API</strong>. /{" "}
-              <em>APIの制限</em> → <strong>キーを制限</strong> →{" "}
-              <strong>Google Drive API</strong>のみを選択。
+              only <strong>Google Drive API</strong>. / <em>APIの制限</em> →{" "}
+              <strong>キーを制限</strong> → <strong>Google Drive API</strong>
+              のみを選択。
             </li>
           </ul>
           Save.
@@ -539,16 +591,15 @@ export default function AdminPage() {
           On GitHub: <strong>Settings</strong> →{" "}
           <strong>Secrets and variables</strong> → <strong>Actions</strong> →{" "}
           <strong>Secrets</strong> → update{" "}
-          <code>NEXT_PUBLIC_GOOGLE_API_KEY</code> with the new value. /
-          GitHubで <strong>Settings</strong> →{" "}
-          <strong>Secrets and variables</strong> → <strong>Actions</strong> →{" "}
-          <strong>Secrets</strong> →{" "}
+          <code>NEXT_PUBLIC_GOOGLE_API_KEY</code> with the new value. / GitHubで{" "}
+          <strong>Settings</strong> → <strong>Secrets and variables</strong> →{" "}
+          <strong>Actions</strong> → <strong>Secrets</strong> →{" "}
           <code>NEXT_PUBLIC_GOOGLE_API_KEY</code>を新しい値で更新。
         </li>
         <li>
-          Re-run the <em>Deploy to GitHub Pages</em> workflow. The old key
-          stops being used as soon as the new bundle ships. After verifying
-          the board works, delete the old key in Cloud Console. /{" "}
+          Re-run the <em>Deploy to GitHub Pages</em> workflow. The old key stops
+          being used as soon as the new bundle ships. After verifying the board
+          works, delete the old key in Cloud Console. /{" "}
           <em>Deploy to GitHub Pages</em>
           ワークフローを再実行。新しいバンドルが配信されると旧キーは使用
           されなくなります。動作確認後、Cloud Consoleで旧キーを削除します。
@@ -560,10 +611,10 @@ export default function AdminPage() {
       </h2>
       <p className="mb-4 text-sm text-muted-foreground">
         Moving the repo to another user/org is supported by GitHub. After the
-        transfer you need to re-create the build secrets and update two values
-        that depend on the new URL. /
+        transfer you need to re-create the build settings and update the one
+        value that depends on the repo name. /
         リポジトリのユーザー/組織への移管はGitHubが公式にサポートしています。
-        移管後はビルドシークレットの再作成と、新しいURLに依存する2つの値の
+        移管後はビルド設定の再作成と、リポジトリ名に依存する1つの値の
         更新が必要です。
       </p>
       <ol className="list-decimal space-y-3 pl-5 text-sm">
@@ -571,11 +622,11 @@ export default function AdminPage() {
           Current repo → <strong>Settings</strong> → bottom →{" "}
           <strong>Transfer ownership</strong>. Type the new owner (e.g.{" "}
           <code>ais-lab</code>) and the new name (e.g.{" "}
-          <code>AIS-Dashboard</code>). /
-          現在のリポジトリ → <strong>Settings</strong> → 一番下 →{" "}
+          <code>AIS-Dashboard</code>). / 現在のリポジトリ →{" "}
+          <strong>Settings</strong> → 一番下 →{" "}
           <strong>Transfer ownership</strong>。新しい所有者（例:{" "}
-          <code>ais-lab</code>）と新しい名前（例:{" "}
-          <code>AIS-Dashboard</code>）を入力。
+          <code>ais-lab</code>）と新しい名前（例: <code>AIS-Dashboard</code>
+          ）を入力。
         </li>
         <li>
           Accept the transfer from the new org (GitHub sends an email or it
@@ -584,27 +635,26 @@ export default function AdminPage() {
           招待に表示）。
         </li>
         <li>
-          In the new repo: <strong>Settings</strong> →{" "}
-          <strong>Pages</strong> → confirm <strong>Source: GitHub Actions</strong>.
-          The Pages URL changes — for{" "}
-          <code>ais-lab/AIS-Dashboard</code> it becomes{" "}
+          In the new repo: <strong>Settings</strong> → <strong>Pages</strong> →
+          confirm <strong>Source: GitHub Actions</strong>. The Pages URL changes
+          — for <code>ais-lab/AIS-Dashboard</code> it becomes{" "}
           <code>https://ais-lab.github.io/AIS-Dashboard/</code>{" "}
-          (case-sensitive). /
-          新リポジトリで <strong>Settings</strong> → <strong>Pages</strong>{" "}
-          → <strong>Source: GitHub Actions</strong>を確認。Pages
-          URLが変わります（<code>ais-lab/AIS-Dashboard</code>なら{" "}
-          <code>https://ais-lab.github.io/AIS-Dashboard/</code>、大文字小文字を区別）。
+          (case-sensitive). / 新リポジトリで <strong>Settings</strong> →{" "}
+          <strong>Pages</strong> → <strong>Source: GitHub Actions</strong>
+          を確認。Pages URLが変わります（<code>
+            ais-lab/AIS-Dashboard
+          </code>なら <code>https://ais-lab.github.io/AIS-Dashboard/</code>
+          、大文字小文字を区別）。
         </li>
         <li>
           <strong>Re-create the build inputs in the new repo</strong> — repo
           Variables and Secrets do <em>not</em> follow a transfer:
           <ul className="mt-1 list-disc space-y-1 pl-5">
             <li>
-              Variables: <code>NEXT_PUBLIC_ENV</code>,{" "}
-              <code>NEXT_PUBLIC_DRIVE_FOLDER_ID</code>, and update{" "}
-              <code>NEXT_PUBLIC_BASE_URL</code> +{" "}
-              <code>NEXT_PUBLIC_APP_URL</code> to the new Pages URL,{" "}
-              <code>NEXT_PUBLIC_BASE_PATH</code> to{" "}
+              Variables: <code>NEXT_PUBLIC_DRIVE_FOLDER_ID</code>,{" "}
+              <code>NEXT_PUBLIC_GOOGLE_CLIENT_ID</code>,{" "}
+              <code>NEXT_PUBLIC_API_URL</code>, and{" "}
+              <code>NEXT_PUBLIC_BASE_PATH</code> set to{" "}
               <code>/AIS-Dashboard</code> (match the repo name exactly, case
               included).
             </li>
@@ -613,18 +663,15 @@ export default function AdminPage() {
             </li>
           </ul>
           / リポジトリのVariablesとSecretsは移管に<em>追随しません</em>。
-          新リポジトリで再作成し、<code>NEXT_PUBLIC_BASE_URL</code> /{" "}
-          <code>NEXT_PUBLIC_APP_URL</code>を新しいPages URLに、{" "}
-          <code>NEXT_PUBLIC_BASE_PATH</code>をリポジトリ名に合わせて
-          （大文字小文字含めて完全一致）更新。
+          新リポジトリで再作成し、<code>NEXT_PUBLIC_BASE_PATH</code>を
+          リポジトリ名に合わせて（大文字小文字含めて完全一致）設定。
         </li>
         <li>
           Update the Google Cloud API key&rsquo;s referrer restrictions to
-          include the new Pages URL with <code>/*</code>. The old referrer can
-          be removed once the new domain works. /
-          Google Cloud APIキーのリファラ制限に新しいPages URL
-          （末尾<code>/*</code>）を追加。新ドメインが動作確認できたら旧リファラは
-          削除可。
+          include the new Pages URL with <code>{"/*"}</code>. The old referrer
+          can be removed once the new domain works. / Google Cloud
+          APIキーのリファラ制限に新しいPages URL （末尾<code>{"/*"}</code>
+          ）を追加。新ドメインが動作確認できたら旧リファラは 削除可。
         </li>
         <li>
           Re-run the <em>Deploy to GitHub Pages</em> workflow. /{" "}
@@ -632,9 +679,8 @@ export default function AdminPage() {
         </li>
         <li>
           GitHub auto-redirects the old URL (
-          <code>princ3od.github.io/aisboard</code>) to the new one for a
-          while, but kiosks should be updated to point at the new URL
-          directly. /
+          <code>princ3od.github.io/aisboard</code>) to the new one for a while,
+          but kiosks should be updated to point at the new URL directly. /
           GitHubは旧URL（<code>princ3od.github.io/aisboard</code>
           ）から新URLへ自動リダイレクトしますが、キオスクは新URLに直接向ける
           ことを推奨します。

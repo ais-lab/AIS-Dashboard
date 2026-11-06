@@ -2,10 +2,18 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { Calendar, FileText, Folder, FolderOpen, Image, Layers, MapPin } from "lucide-react"
+import {
+  Calendar,
+  FileText,
+  Folder,
+  FolderOpen,
+  Image as ImageIcon,
+  Layers,
+  MapPin,
+} from "lucide-react"
 
-import { parseFilename } from "@/lib/utils/filename-rules"
 import { cn } from "@/lib/utils"
+import { parseFilename } from "@/lib/utils/filename-rules"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -182,7 +190,7 @@ const TypeIcon = ({
 }) => {
   const Icon =
     type === "image"
-      ? Image
+      ? ImageIcon
       : type === "text"
         ? FileText
         : type === "event"
@@ -226,13 +234,7 @@ const formatEventDate = (iso: string) => {
   return { en, ja }
 }
 
-const CountdownUnit = ({
-  value,
-  label,
-}: {
-  value: number
-  label: string
-}) => (
+const CountdownUnit = ({ value, label }: { value: number; label: string }) => (
   <div className="flex flex-col items-center">
     <span>{pad(value)}</span>
     <span className="text-[9px] font-normal uppercase tracking-wider text-muted-foreground">
@@ -253,7 +255,7 @@ const PreviewSlide = ({
   if (item.type === "image") {
     return (
       <div className="relative flex h-full w-full flex-col items-center justify-center gap-3 bg-muted p-8 text-center">
-        <Image className="size-10 text-muted-foreground/40" />
+        <ImageIcon className="text-muted-foreground/40 size-10" />
         <div className="text-2xl font-semibold text-foreground">
           {item.preview?.title}
         </div>
@@ -262,7 +264,7 @@ const PreviewSlide = ({
             {item.preview.subtitle}
           </div>
         )}
-        <code className="absolute bottom-3 left-1/2 -translate-x-1/2 font-mono text-[10px] text-muted-foreground/60">
+        <code className="text-muted-foreground/60 absolute bottom-3 left-1/2 -translate-x-1/2 font-mono text-[10px]">
           {item.name}
         </code>
       </div>
@@ -356,7 +358,8 @@ const TokenExplainer = ({ name }: { name: string }) => {
   if (fMatch) chips.push({ token: fMatch[0], meaning: `from ${parsed.from}` })
   if (tMatch) chips.push({ token: tMatch[0], meaning: `to ${parsed.to}` })
   if (dMatch) chips.push({ token: dMatch[0], meaning: `for ${dMatch[1]} days` })
-  if (wMatch) chips.push({ token: wMatch[0], meaning: `weight ${parsed.weight}` })
+  if (wMatch)
+    chips.push({ token: wMatch[0], meaning: `weight ${parsed.weight}` })
   if (sMatch)
     chips.push({
       token: sMatch[0],
@@ -513,7 +516,10 @@ export default function TourPage() {
     ? parseFilename(currentSlide.name).displaySeconds
     : undefined
   const slideRealSecondsLabel = slideRealSeconds ?? 30
-  const slideRemainingMs = Math.max(0, slideDemoMs - slideDemoMs * slideProgress)
+  const slideRemainingMs = Math.max(
+    0,
+    slideDemoMs - slideDemoMs * slideProgress
+  )
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12">
@@ -573,15 +579,15 @@ export default function TourPage() {
                     style={{ left: `${pct}%` }}
                     title={iso}
                   >
-                    <div className="size-1.5 rounded-full bg-primary/70 ring-2 ring-background" />
+                    <div className="bg-primary/70 size-1.5 rounded-full ring-2 ring-background" />
                   </div>
                 )
               })}
             </div>
           </div>
           <p className="text-[10px] text-muted-foreground">
-            Dots mark F/T boundaries in the sample folder — every point an
-            item enters or exits its window. Hover a dot to see the date. /
+            Dots mark F/T boundaries in the sample folder — every point an item
+            enters or exits its window. Hover a dot to see the date. /
             ドットはサンプルフォルダのF/T境界（アイテムの表示開始・終了日）です。
             ホバーで日付が出ます。
           </p>
@@ -622,7 +628,9 @@ export default function TourPage() {
             <ul className="space-y-0.5 text-sm">
               {SAMPLE_FOLDER.map((item) => {
                 const active =
-                  item.type === "folder" ? isEligible(item) : isItemActive(item, simIso)
+                  item.type === "folder"
+                    ? isEligible(item)
+                    : isItemActive(item, simIso)
                 const isCurrentSlide =
                   currentSlide === item ||
                   (item.children && item.children.includes(folderPick as any))
@@ -636,7 +644,7 @@ export default function TourPage() {
                         "flex items-center gap-2 rounded px-2 py-1.5 transition-all",
                         !active && "opacity-40",
                         isCurrent &&
-                          "bg-primary/10 ring-1 ring-primary/40 ring-offset-0"
+                          "bg-primary/10 ring-primary/40 ring-1 ring-offset-0"
                       )}
                     >
                       <TypeIcon
@@ -655,7 +663,10 @@ export default function TourPage() {
                         {item.name}
                       </code>
                       {!active && (
-                        <Badge variant="outline" className="shrink-0 text-[10px]">
+                        <Badge
+                          variant="outline"
+                          className="shrink-0 text-[10px]"
+                        >
                           out of window / 期間外
                         </Badge>
                       )}
@@ -682,7 +693,7 @@ export default function TourPage() {
                                 "flex items-center gap-2 rounded px-2 py-1 transition-all",
                                 !childActive && "opacity-40",
                                 childIsCurrent &&
-                                  "bg-primary/10 ring-1 ring-primary/40"
+                                  "bg-primary/10 ring-primary/40 ring-1"
                               )}
                             >
                               <TypeIcon
@@ -720,12 +731,12 @@ export default function TourPage() {
                 表示中
               </span>
               <span className="flex items-center gap-1">
-                <span className="size-2 rounded-full bg-foreground/30" />
+                <span className="bg-foreground/30 size-2 rounded-full" />
                 eligible / 表示候補
               </span>
               <span className="flex items-center gap-1">
-                <span className="size-2 rounded-full bg-foreground/10" /> out
-                of window / 期間外
+                <span className="bg-foreground/10 size-2 rounded-full" /> out of
+                window / 期間外
               </span>
             </div>
           </CardContent>
@@ -740,7 +751,7 @@ export default function TourPage() {
                     <div
                       key={`ev-${currentEvent?.name}`}
                       className={cn(
-                        "w-full overflow-hidden border-b border-border animate-in fade-in zoom-in-95 duration-500",
+                        "w-full overflow-hidden border-b border-border duration-500 animate-in fade-in zoom-in-95",
                         splitMode ? "h-[25%] min-h-[72px]" : "h-full"
                       )}
                     >
@@ -757,7 +768,7 @@ export default function TourPage() {
                     <div
                       key={`sl-${displayedSlide?.name}`}
                       className={cn(
-                        "relative w-full flex-1 overflow-hidden animate-in fade-in zoom-in-95 duration-500"
+                        "relative w-full flex-1 overflow-hidden duration-500 animate-in fade-in zoom-in-95"
                       )}
                     >
                       {displayedSlide && (
@@ -776,7 +787,7 @@ export default function TourPage() {
                 </div>
               )}
               {hasSlides && (
-                <div className="absolute inset-x-0 bottom-0 h-1 bg-foreground/10">
+                <div className="bg-foreground/10 absolute inset-x-0 bottom-0 h-1">
                   <div
                     className="h-full bg-primary transition-[width] duration-75 ease-linear"
                     style={{ width: `${slideProgress * 100}%` }}
@@ -785,11 +796,11 @@ export default function TourPage() {
               )}
             </div>
             {(hasSlides || hasEvents) && (
-              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-border bg-background/60 px-3 py-1.5 text-[11px] text-muted-foreground">
+              <div className="bg-background/60 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-border px-3 py-1.5 text-[11px] text-muted-foreground">
                 {splitMode && (
                   <span className="text-foreground/80">
-                    Both an event banner and the slideshow are on screen —
-                    they rotate independently. /
+                    Both an event banner and the slideshow are on screen — they
+                    rotate independently. /
                     イベントバナーとスライドショーは同時に表示され、
                     それぞれ独立して切り替わります。
                   </span>
@@ -802,8 +813,8 @@ export default function TourPage() {
                       {!slideRealSeconds && " (default / 既定)"}
                     </span>
                     <span className="tabular-nums">
-                      Next in / 次まで{" "}
-                      {(slideRemainingMs / 1000).toFixed(1)}s (at 1.5× speed / 1.5倍速)
+                      Next in / 次まで {(slideRemainingMs / 1000).toFixed(1)}s
+                      (at 1.5× speed / 1.5倍速)
                     </span>
                   </>
                 )}
@@ -840,8 +851,7 @@ export default function TourPage() {
                     <p className="text-xs text-muted-foreground">
                       Picked from <code>{currentSlide.name}</code> using
                       weighted random across {currentSlide.children?.length}{" "}
-                      children. /{" "}
-                      <code>{currentSlide.name}</code>
+                      children. / <code>{currentSlide.name}</code>
                       の中から重み付きランダムで選択されました。
                     </p>
                   )}
@@ -858,9 +868,7 @@ export default function TourPage() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">
-                Try this / 試してみよう
-              </CardTitle>
+              <CardTitle className="text-sm">Try this / 試してみよう</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="list-disc space-y-1.5 pl-5 text-xs text-muted-foreground">
@@ -871,9 +879,9 @@ export default function TourPage() {
                 </li>
                 <li>
                   Slide past <strong>Dec 10, 2025</strong> — countdown switches
-                  to &ldquo;Time is up! / 時間切れ!&rdquo; until the file drops out of
-                  its window. / 2025年12月10日を過ぎると「時間切れ」表示に
-                  なります。
+                  to &ldquo;Time is up! / 時間切れ!&rdquo; until the file drops
+                  out of its window. /
+                  2025年12月10日を過ぎると「時間切れ」表示に なります。
                 </li>
                 <li>
                   Slide to <strong>March 2026</strong> — the IROS 2026
@@ -892,18 +900,17 @@ export default function TourPage() {
                   Notice the dwell time changes with <code>S</code>: the new
                   members poster (S60) lingers longer; the award flash (S10)
                   flips by quickly. The demo runs at 1.5× real speed, so the
-                  rhythm matches the real board. /{" "}
-                  <code>S</code>トークンによって表示時間が変わります：新メンバー
+                  rhythm matches the real board. / <code>S</code>
+                  トークンによって表示時間が変わります：新メンバー
                   ポスター（S60）は長く、受賞報告（S10）は短く表示されます。
                   デモは実機の1.5倍速で動作します。
                 </li>
                 <li>
                   When an event and a slideshow item are both active (e.g. at
                   today&rsquo;s date), the board splits — event banner on top,
-                  slideshow below. They rotate independently, just like the
-                  real screen. /
-                  イベントとスライドショーの両方が有効な日付（例: 今日）
-                  では、上部にイベントバナー、下部にスライドショーが
+                  slideshow below. They rotate independently, just like the real
+                  screen. / イベントとスライドショーの両方が有効な日付（例:
+                  今日） では、上部にイベントバナー、下部にスライドショーが
                   分割表示されます。実機と同じく独立して切り替わります。
                 </li>
               </ul>

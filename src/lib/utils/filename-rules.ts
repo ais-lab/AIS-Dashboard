@@ -23,6 +23,49 @@ const pad = (n: number) => String(n).padStart(2, "0")
 export const toYYYYMMDD = (date: Date): string =>
   `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`
 
+// Local calendar date as YYYY-MM-DD. toISOString() would give the UTC date,
+// which in Japan is still yesterday until 9am.
+export const todayIso = (now = new Date()): string =>
+  `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+
+// "2026-11-01" (from an <input type="date">) as local midnight.
+export const fromIsoDate = (iso: string): Date => {
+  const [y, m, d] = iso.split("-").map(Number)
+  return new Date(y, m - 1, d)
+}
+
+// A title like "Room D101" would otherwise be read as "show for 101 days",
+// so token letters followed by a digit are lowercased.
+export const safeBaseName = (base: string): string =>
+  base.replace(/[FTDWS](?=\d)/g, (c) => c.toLowerCase())
+
+// "seminar_F20261101T20261115.png" -> { title: "seminar", extension: "png" }
+export const splitFilename = (
+  name: string
+): { title: string; extension: string } => {
+  const ext = name.match(/\.([A-Za-z0-9]{1,5})$/)
+  const stem = ext ? name.slice(0, -ext[0].length) : name
+  const title = stem
+    .replace(/F\d{8}|T\d{8}|D\d+|W\d+|S\d+/g, "")
+    .replace(/_{2,}/g, "_")
+    .replace(/^[_\s-]+|[_\s-]+$/g, "")
+  return { title: title || stem, extension: ext ? ext[1] : "" }
+}
+
+export type ScheduleStatus = "showing" | "scheduled" | "ended" | "invalid"
+
+export const scheduleStatus = (
+  parsed: ParsedFilename,
+  today = todayIso()
+): ScheduleStatus => {
+  if (!parsed.from || !parsed.to || parsed.from > parsed.to) return "invalid"
+  if (parsed.from > today) return "scheduled"
+  if (parsed.to < today) return "ended"
+  return "showing"
+}
+
+export const FOREVER = "9999-12-31"
+
 export const fromYYYYMMDD = (s: string): Date | null => {
   if (!/^\d{8}$/.test(s)) return null
   const iso = `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`
@@ -130,7 +173,7 @@ export const buildFilename = (opts: BuildOptions): string => {
     parts.push(`S${opts.displaySeconds}`)
 
   const tokens = parts.join("")
-  const base = opts.base.trim() || "untitled"
+  const base = safeBaseName(opts.base.trim()) || "untitled"
   const ext = opts.extension?.trim()
 
   const stem = tokens ? `${base}_${tokens}` : base

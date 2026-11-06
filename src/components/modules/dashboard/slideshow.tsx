@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
+import { driveImageUrl } from "@/apis/gdrive/client"
 import type { EmblaCarouselType } from "embla-carousel"
 
-import { driveImageUrl } from "@/apis/gdrive/client"
 import { BaseDisplayItem, FolderItem } from "@/types/models"
 import { cn } from "@/lib/utils"
 import {
@@ -79,10 +79,12 @@ const Slideshow = ({ displayItems }: Props) => {
                 )}
               >
                 <img
+                  alt={item.name}
                   src={driveImageUrl(item.id)}
                   className="size-full object-contain"
                 />
                 <img
+                  alt=""
                   src={driveImageUrl(item.id)}
                   className="absolute inset-0 -z-10 size-full object-cover blur-md"
                 />

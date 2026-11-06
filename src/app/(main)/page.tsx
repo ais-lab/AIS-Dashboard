@@ -60,8 +60,8 @@ export default function MainPage() {
     return () => clearTimeout(id)
   }, [])
 
-  const events = displayItems?.filter((item) => item.type === "event")
-  const hasEvents = events && events.length > 0
+  const events = displayItems?.filter((item) => item.type === "event") ?? []
+  const hasEvents = events.length > 0
 
   const slideShowItems = displayItems?.filter((item) => item.type !== "event")
   const hasSlideShowItems = slideShowItems && slideShowItems.length > 0
@@ -75,7 +75,7 @@ export default function MainPage() {
     <div className="mx-auto flex h-screen w-screen flex-col">
       <WeatherBadge latitude={34.8} longitude={135.56} />
       {error && (
-        <div className="fixed left-1/2 top-12 z-20 -translate-x-1/2 rounded-md border border-destructive/40 bg-destructive/90 px-4 py-2 text-center text-xs text-destructive-foreground shadow-lg backdrop-blur">
+        <div className="border-destructive/40 bg-destructive/90 fixed left-1/2 top-12 z-20 -translate-x-1/2 rounded-md border px-4 py-2 text-center text-xs text-destructive-foreground shadow-lg backdrop-blur">
           Can&rsquo;t reach Drive (retry {failureCount})
           {lastSuccessAgo && ` · last success ${lastSuccessAgo} ago`} / Driveに
           接続できません{lastSuccessAgo && ` · 最終取得 ${lastSuccessAgo}前`}
@@ -91,13 +91,11 @@ export default function MainPage() {
           <Label className="text-center text-6xl">Welcome to AIS Lab</Label>
         </div>
       )}
-      {hasEvents ? (
+      {hasEvents && (
         <EventSlideShow
           displayItems={events}
           type={hasSlideShowItems ? "normal" : "fullscreen"}
         />
-      ) : (
-        <></>
       )}
       {hasSlideShowItems && (
         <div className="flex-1 overflow-hidden">
@@ -126,6 +124,11 @@ export default function MainPage() {
       </div>
 
       <div className="fixed bottom-4 left-4 z-50 flex gap-2 opacity-0 transition-opacity duration-300 ease-in-out hover:opacity-100">
+        <Link href="/upload/">
+          <Button variant="outline" size="sm">
+            Upload
+          </Button>
+        </Link>
         <Link href="/tour/">
           <Button variant="outline" size="sm">
             Tour
@@ -133,7 +136,7 @@ export default function MainPage() {
         </Link>
         <Link href="/tutorial/">
           <Button variant="outline" size="sm">
-            Filename guide
+            How to use
           </Button>
         </Link>
         <Link href="/admin/">

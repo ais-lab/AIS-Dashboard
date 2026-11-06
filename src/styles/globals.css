@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-  .light {
+  :root {
     --background: #ffffff;
     --foreground: #212426;
 
@@ -63,68 +63,6 @@
 
     --radius: 0.5rem;
   }
-
-  .dark {
-    --background: #1e1e1e;
-    --foreground: white;
-
-    --card: #222222;
-    --card-foreground: white;
-
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: #18181b; /* Changed to black */
-    --primary-foreground: white;
-
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-
-    --accent: #ff69b4;
-    --accent-foreground: 0 0% 98%;
-
-    --info: #ff964f;
-    --info-background: #f7eadd;
-
-    --destructive: #c9131b;
-    --destructive-background: #fff0f0;
-    --destructive-foreground: 0 0% 98%;
-
-    --success: #55bf88;
-
-    --lava-red: #c9131b;
-    --misty-rose: #fff0f0;
-
-    --neutral-25: #d7d7d7;
-    --neutral-50: #9b9b9b;
-    --neutral-75: #636363;
-    --neutral-100: #696969;
-    --neutral-150: #555555;
-    --neutral-200: #4c4c4c;
-    --neutral-250: #464646;
-    --neutral-300: #404040;
-    --neutral-350: #3b3b3b;
-    --neutral-400: #373737;
-    --neutral-450: #333333;
-    --neutral-500: #303030;
-    --neutral-550: #2d2d2d;
-    --neutral-600: #2a2a2a;
-    --neutral-700: #252525;
-    --neutral-800: #222222;
-    --neutral-900: #1e1e1e;
-
-    --green-clover: #279e5f;
-    --green-paris: #55bf88;
-
-    --border: #4c4c4c;
-    --input: #4c4c4c;
-    --ring: 0 0% 83.1%;
-
-    --radius: 0.5rem;
-  }
 }
 
 @layer base {
@@ -148,11 +86,6 @@
   textarea:enabled,
   [role="combobox"]:enabled {
     @apply shadow-sm;
-  }
-
-  .dark [data-hide-on-theme="dark"],
-  .light [data-hide-on-theme="light"] {
-    display: none;
   }
 
   .hero {

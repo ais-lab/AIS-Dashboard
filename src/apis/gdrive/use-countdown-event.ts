@@ -9,7 +9,7 @@ interface GetCountDownEventParams {
   displayItem: BaseDisplayItem
 }
 
-const getCountDownEvent = ({ displayItem }: GetCountDownEventParams) =>
+export const getCountDownEvent = ({ displayItem }: GetCountDownEventParams) =>
   fetchDriveFileJson<CountdownEvent>(displayItem.id)
 
 type CountdownEventQueryOptions = Omit<

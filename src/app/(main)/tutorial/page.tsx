@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
+import { isBoardApiConfigured } from "@/apis/board-api/client"
 import { toast } from "sonner"
 
+import { BOARD_ADMIN_EMAIL } from "@/config/site"
 import {
   buildFilename,
   parseFilename,
@@ -52,7 +54,7 @@ const elementCatalog: Record<ElementType, ElementMeta> = {
   },
   event: {
     label: "Countdown event / カウントダウンイベント",
-    hint: "JSON file describing a conference, lab event, deadline, etc. Renders as a banner with the event name, date, location, and a live countdown. When the date passes it shows \"Time is up! / 時間切れ!\" until its T window closes. / 学会・研究室イベント・締切などを表すJSON。イベント名・日付・場所・カウントダウンを含むバナーとして表示され、当日を過ぎるとT期間が終わるまで「時間切れ」表示になります。",
+    hint: 'JSON file describing a conference, lab event, deadline, etc. Renders as a banner with the event name, date, location, and a live countdown. When the date passes it shows "Time is up! / 時間切れ!" until its T window closes. / 学会・研究室イベント・締切などを表すJSON。イベント名・日付・場所・カウントダウンを含むバナーとして表示され、当日を過ぎるとT期間が終わるまで「時間切れ」表示になります。',
     extensions: ["json"],
     defaultExt: "json",
   },
@@ -197,7 +199,8 @@ const EventJsonHelper = (props: EventJsonHelperProps) => {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="evName">
-                Event name / イベント名 <span className="text-destructive">*</span>
+                Event name / イベント名{" "}
+                <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="evName"
@@ -250,17 +253,13 @@ const EventJsonHelper = (props: EventJsonHelperProps) => {
 
           <div>
             <Label className="mb-1.5 inline-block">Preview / プレビュー</Label>
-            <pre className="overflow-x-auto rounded-md border border-border bg-muted/30 p-3 text-xs">
+            <pre className="bg-muted/30 overflow-x-auto rounded-md border border-border p-3 text-xs">
               <code>{props.json || "{}"}</code>
             </pre>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button
-              onClick={props.onCopy}
-              disabled={!canDownload}
-              size="sm"
-            >
+            <Button onClick={props.onCopy} disabled={!canDownload} size="sm">
               Copy JSON / JSONをコピー
             </Button>
             <Button
@@ -303,6 +302,26 @@ const formatLong = (iso?: string) => {
   })
   return `${en} / ${ja}`
 }
+
+const Step = ({
+  n,
+  title,
+  children,
+}: {
+  n: number
+  title: string
+  children: React.ReactNode
+}) => (
+  <li className="flex gap-4">
+    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-base font-bold text-primary-foreground">
+      {n}
+    </span>
+    <div className="min-w-0 flex-1 space-y-2">
+      <p className="text-base font-semibold">{title}</p>
+      {children}
+    </div>
+  </li>
+)
 
 export default function GuidePage() {
   const today = toYYYYMMDD(new Date())
@@ -411,11 +430,12 @@ export default function GuidePage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">
-            Filename guide / ファイル名ガイド
+            How to use the board / ボードの使い方
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Build a name with the generator, or scroll down for the full
-            reference. / ジェネレーターで名前を作成、または下にスクロールしてリファレンスをご覧ください。
+            The lab monitor shows whatever is in a shared Drive folder. The file
+            name decides when each file is shown. /
+            ラボのモニターは共有Driveフォルダの中身を表示します。ファイル名で表示期間が決まります。
           </p>
         </div>
         <div className="flex shrink-0 gap-2">
@@ -437,61 +457,104 @@ export default function GuidePage() {
         </div>
       </div>
 
-      {folderUrl && (
-        <Card className="mb-4 border-primary/40">
+      {isBoardApiConfigured() && (
+        <Card className="mb-4 border-primary">
           <CardHeader>
             <CardTitle className="text-base">
-              Drive folder / Driveフォルダ
+              Easiest: the upload page / いちばん簡単：アップロードページ
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Upload your files here. The board reads this folder every 30
-              seconds — changes appear within a minute. /
-              ここにファイルをアップロードしてください。ボードは30秒ごとに読み込みます — 1分以内に反映されます。
+          <CardContent className="space-y-3 text-sm">
+            <p className="text-muted-foreground">
+              Sign in with Google and request access once. {BOARD_ADMIN_EMAIL}{" "}
+              approves you, then you upload and pick the dates. No file names to
+              learn. / Googleでサインインし、初回だけアクセスを申請します。
+              {BOARD_ADMIN_EMAIL}
+              が承認すると、アップロードして日付を選ぶだけで表示できます。
             </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <a
-                href={folderUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1"
-              >
-                <Button className="w-full sm:w-auto">
-                  Open folder in Drive / Driveでフォルダを開く
-                </Button>
-              </a>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(folderUrl)
-                    toast.success("Folder URL copied / URLをコピーしました")
-                  } catch {
-                    toast.error("Copy failed / コピーに失敗しました")
-                  }
-                }}
-              >
-                Copy URL / URLをコピー
-              </Button>
-            </div>
-            <code className="block break-all rounded bg-muted px-3 py-2 font-mono text-xs">
-              {folderUrl}
-            </code>
-            <p className="text-xs text-muted-foreground">
-              You need <strong>Editor</strong> access to upload. If you can
-              view but not upload, ask the folder owner to add your Google
-              account as an editor. /
-              アップロードには<strong>編集者</strong>権限が必要です。閲覧のみで
-              アップロードできない場合は、フォルダ所有者にGoogleアカウントを
-              編集者として追加してもらってください。
-            </p>
+            <Link href="/upload/">
+              <Button>Open the upload page / アップロードページへ</Button>
+            </Link>
           </CardContent>
         </Card>
       )}
 
-      <Card className="mb-4">
+      <Card className="border-primary/40 mb-4">
+        <CardHeader>
+          <CardTitle className="text-base">
+            {isBoardApiConfigured()
+              ? "Or add files straight to Drive / またはDriveに直接追加"
+              : "Put something on the screen in 3 steps / 3ステップで画面に表示"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ol className="space-y-6 text-sm">
+            <Step
+              n={1}
+              title="Open the shared Drive folder / 共有Driveフォルダを開く"
+            >
+              {folderUrl && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <a href={folderUrl} target="_blank" rel="noopener noreferrer">
+                    <Button>
+                      Open folder in Drive / Driveでフォルダを開く
+                    </Button>
+                  </a>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(folderUrl)
+                        toast.success("Folder URL copied / URLをコピーしました")
+                      } catch {
+                        toast.error("Copy failed / コピーに失敗しました")
+                      }
+                    }}
+                  >
+                    Copy URL / URLをコピー
+                  </Button>
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                You need <strong>Editor</strong> access to upload. If you can
+                only view, ask {BOARD_ADMIN_EMAIL} to add your Google account. /
+                アップロードには<strong>編集者</strong>
+                権限が必要です。閲覧のみの場合は、{BOARD_ADMIN_EMAIL}
+                にGoogleアカウントの追加を依頼してください。
+              </p>
+            </Step>
+            <Step n={2} title="Name your file / ファイル名を付ける">
+              <p className="text-muted-foreground">
+                Add date tokens so the board knows when to show it. For example{" "}
+                <code className="rounded bg-muted px-1">
+                  seminar_F20261101T20261115.png
+                </code>{" "}
+                is shown from 1 to 15 November 2026. Use the{" "}
+                <a href="#generator" className="underline">
+                  generator below
+                </a>{" "}
+                to build the name. /
+                表示期間をファイル名に入れます。例えば上の名前は2026年11月1日〜15日に表示されます。
+                <a href="#generator" className="underline">
+                  下のジェネレーター
+                </a>
+                で作成できます。
+              </p>
+            </Step>
+            <Step n={3} title="Upload it / アップロードする">
+              <p className="text-muted-foreground">
+                Drop the file into the folder. The board checks every 30
+                seconds, so it appears within a minute. To take it down early,
+                delete or rename the file. /
+                フォルダにファイルを入れてください。ボードは30秒ごとに確認するので、1分以内に表示されます。早めに消したい場合は、ファイルを削除または名前を変更してください。
+              </p>
+            </Step>
+          </ol>
+        </CardContent>
+      </Card>
+
+      <Card id="generator" className="mb-4 scroll-mt-6">
         <CardHeader>
           <CardTitle className="text-base">
             Generator / ジェネレーター
@@ -652,16 +715,16 @@ export default function GuidePage() {
             />
             <p className="text-xs text-muted-foreground">
               How long this item stays on screen before the next slide. Leave
-              blank for the default ({meta.label.includes("event") ? "35" : "30"}
-              s). /
-              次のスライドに切り替わるまでの表示時間。空欄で既定値（
+              blank for the default (
+              {meta.label.includes("event") ? "35" : "30"}
+              s). / 次のスライドに切り替わるまでの表示時間。空欄で既定値（
               {meta.label.includes("event") ? "35" : "30"}秒）。
             </p>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="mb-10 border-primary/40">
+      <Card className="border-primary/40 mb-10">
         <CardHeader>
           <CardTitle className="text-base">Result / 結果</CardTitle>
         </CardHeader>
@@ -746,14 +809,12 @@ export default function GuidePage() {
 
       <Separator className="mb-10" />
 
-      <h2 className="mb-2 text-2xl font-semibold">
-        Reference / リファレンス
-      </h2>
+      <h2 className="mb-2 text-2xl font-semibold">Reference / リファレンス</h2>
       <p className="mb-8 text-muted-foreground">
         The board reads files from a Google Drive folder. To control{" "}
         <em>when</em> and <em>how often</em> a file is shown, embed tokens
-        anywhere in its filename. Tokens are case-sensitive. /
-        ボードはGoogle Driveフォルダからファイルを読み込みます。表示する
+        anywhere in its filename. Tokens are case-sensitive. / ボードはGoogle
+        Driveフォルダからファイルを読み込みます。表示する
         <em>タイミング</em>と<em>頻度</em>はファイル名に埋め込んだトークンで
         制御します。大文字小文字を区別します。
       </p>
@@ -785,7 +846,7 @@ export default function GuidePage() {
         {examples.map((ex) => (
           <div
             key={ex.name}
-            className="rounded-md border border-border bg-muted/30 p-4"
+            className="bg-muted/30 rounded-md border border-border p-4"
           >
             <code className="block break-all font-mono text-sm">{ex.name}</code>
             <p className="mt-2 text-sm text-muted-foreground">{ex.meaning}</p>
@@ -796,7 +857,7 @@ export default function GuidePage() {
       <h3 className="mb-4 text-lg font-semibold">
         Countdown event JSON shape / カウントダウンイベントのJSON形式
       </h3>
-      <pre className="mb-10 overflow-x-auto rounded-md border border-border bg-muted/30 p-4 text-xs">
+      <pre className="bg-muted/30 mb-10 overflow-x-auto rounded-md border border-border p-4 text-xs">
         <code>{`{
   "name": "SI 2025",
   "date": "2025-12-10",
@@ -808,20 +869,20 @@ export default function GuidePage() {
       <ul className="mb-10 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
         <li>
           <code>name</code> and <code>date</code> are required;{" "}
-          <code>address</code>, <code>description</code>, <code>note</code>{" "}
-          are optional. /{" "}
-          <code>name</code>と<code>date</code>は必須、それ以外は任意です。
+          <code>address</code>, <code>description</code>, <code>note</code> are
+          optional. / <code>name</code>と<code>date</code>
+          は必須、それ以外は任意です。
         </li>
         <li>
           The countdown ticks every second while the file is in its display
-          window. After <code>date</code> passes, it shows &ldquo;Time is up! / 時間
-          切れ!&rdquo; until the <code>T</code> token expires. /
+          window. After <code>date</code> passes, it shows &ldquo;Time is up! /
+          時間 切れ!&rdquo; until the <code>T</code> token expires. /
           表示期間中は秒単位でカウントダウンされ、<code>date</code>を過ぎると
           <code>T</code>期間が終わるまで「時間切れ」になります。
         </li>
         <li>
-          If there&rsquo;s no other slideshow content, the event takes the
-          whole screen; otherwise it sits as a 180px banner at the top. /
+          If there&rsquo;s no other slideshow content, the event takes the whole
+          screen; otherwise it sits as a 180px banner at the top. /
           他にスライドショーコンテンツがない場合はフルスクリーン表示、ある場合は
           上部に180pxのバナーとして表示されます。
         </li>
@@ -845,9 +906,10 @@ export default function GuidePage() {
           みなされ、スキップされます。
         </li>
         <li>
-          Dates use UTC. The dashboard polls Drive every 30 seconds, so updates
-          appear within a minute. /
-          日付はUTC基準。ボードは30秒ごとにDriveを確認し、1分以内に更新が
+          Dates follow the local date of the screen showing the board. The
+          dashboard polls Drive every 30 seconds, so updates appear within a
+          minute. /
+          日付はボードを表示している端末のローカル日付に従います。ボードは30秒ごとにDriveを確認し、1分以内に更新が
           反映されます。
         </li>
       </ul>

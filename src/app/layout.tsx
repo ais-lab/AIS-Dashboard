@@ -1,84 +1,43 @@
 import "@/styles/globals.css"
 
-import type { Metadata, Viewport } from "next"
+import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 
 import { siteConfig } from "@/config/site"
 import { cn } from "@/lib/utils"
 import { Toaster } from "@/components/ui/sonner"
-import { ThemeProvider } from "@/components/common/theme-provider"
 
 const inter = Inter({
   subsets: ["latin"],
 })
 
-interface RootLayoutProps {
-  children: React.ReactNode
-}
-
 export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url.base),
   title: {
     default: siteConfig.name,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
-  keywords: siteConfig.keywords,
-  authors: [
-    {
-      name: siteConfig.author,
-      url: siteConfig.url.author,
-    },
-  ],
-  creator: siteConfig.author,
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: siteConfig.url.base,
-    title: siteConfig.name,
-    description: siteConfig.description,
-    siteName: siteConfig.name,
-    images: [
-      {
-        url: siteConfig.ogImage,
-        width: 1200,
-        height: 630,
-        alt: siteConfig.name,
-      },
-    ],
-  },
-  icons: {
-    icon: "/favicon.ico?v=4",
-  },
+  // The Pages URL exposes the Drive folder ID, so keep it out of search engines.
   robots: {
     index: false,
     follow: false,
   },
 }
 
-export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" },
-  ],
-}
-
-export default function RootLayout({ children }: RootLayoutProps) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="vi" translate="no" suppressHydrationWarning>
+    <html lang="en" translate="no">
       <body
         className={cn(
           "min-h-screen bg-background antialiased",
           inter.className
         )}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+        {children}
         <Toaster richColors />
       </body>
     </html>

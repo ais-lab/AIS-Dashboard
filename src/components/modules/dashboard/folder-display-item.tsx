@@ -1,4 +1,5 @@
 import { driveImageUrl } from "@/apis/gdrive/client"
+
 import { BaseDisplayItem } from "@/types/models"
 import { Badge } from "@/components/ui/badge"
 
@@ -45,10 +46,12 @@ const FolderDisplayItem = ({ items, folderName }: Props) => {
       <>
         {badge}
         <img
+          alt={selectedItem.name}
           src={driveImageUrl(selectedItem.id)}
           className="ml-4 size-full object-contain"
         />
         <img
+          alt=""
           src={driveImageUrl(selectedItem.id)}
           className="absolute inset-0 -z-10 ml-4 size-full object-cover blur-md"
         />

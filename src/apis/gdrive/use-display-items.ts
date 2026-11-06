@@ -1,11 +1,19 @@
 import { displayItemKeys } from "@/constants/query-key-factory"
-import { useQuery, UseQueryOptions } from "@tanstack/react-query"
+import {
+  QueryClient,
+  useQuery,
+  useQueryClient,
+  UseQueryOptions,
+} from "@tanstack/react-query"
 
 import { BaseDisplayItem, FolderItem } from "@/types/models"
-import { parseFilename } from "@/lib/utils/filename-rules"
+import { duration } from "@/lib/utils/duration"
+import { isEventOver } from "@/lib/utils/event"
+import { parseFilename, todayIso } from "@/lib/utils/filename-rules"
 import { getActiveFolderId } from "@/lib/utils/folder-override"
 
 import { listDriveFolder } from "./client"
+import { getCountDownEvent } from "./use-countdown-event"
 
 const getDisplayType = (mimeType: string) => {
   if (mimeType.includes("image")) return "image"
@@ -19,7 +27,7 @@ const getDisplayItems = async (level = 0, folderId = "") => {
 
   const rawItems = await listDriveFolder(folderId || getActiveFolderId())
   const items: BaseDisplayItem[] = []
-  const nowIso = new Date().toISOString().slice(0, 10)
+  const nowIso = todayIso()
 
   for (const file of rawItems.files) {
     const { id, name, mimeType } = file
@@ -60,15 +68,40 @@ const getDisplayItems = async (level = 0, folderId = "") => {
   return items
 }
 
+// The event date lives inside the JSON, so past events can only be dropped after
+// fetching it. The fetch goes through the same cache key the countdown card reads.
+const dropPastEvents = async (
+  items: BaseDisplayItem[],
+  queryClient: QueryClient
+) => {
+  const kept = await Promise.all(
+    items.map(async (item) => {
+      if (item.type !== "event") return item
+      try {
+        const event = await queryClient.fetchQuery({
+          queryKey: displayItemKeys.event(item.id),
+          queryFn: () => getCountDownEvent({ displayItem: item }),
+          staleTime: duration.seconds(30),
+        })
+        return isEventOver(event.date) ? null : item
+      } catch {
+        return item
+      }
+    })
+  )
+  return kept.filter((item): item is BaseDisplayItem => item !== null)
+}
+
 type UseDisplayItemsOptions = Omit<
   UseQueryOptions<BaseDisplayItem[] | FolderItem[], Error>,
   "queryKey" | "queryFn"
 >
 
 export const useDisplayItems = (options?: UseDisplayItemsOptions) => {
+  const queryClient = useQueryClient()
   return useQuery({
     queryKey: displayItemKeys.all(),
-    queryFn: () => getDisplayItems(),
+    queryFn: async () => dropPastEvents(await getDisplayItems(), queryClient),
     ...options,
   })
 }

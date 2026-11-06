@@ -1,4 +1,4 @@
-import { useWeather } from "@/apis/gdrive/use-weather"
+import { useWeather } from "@/apis/weather/use-weather"
 import { openWeatherWMOToEmoji } from "@akaguny/open-meteo-wmo-to-emoji"
 
 import dayjsConfig from "@/config/dayjs"

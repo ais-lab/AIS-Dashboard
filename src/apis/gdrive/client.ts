@@ -37,7 +37,8 @@ export const listDriveFolder = async (
   url.searchParams.set("key", env.NEXT_PUBLIC_GOOGLE_API_KEY)
 
   const res = await fetch(url.toString())
-  if (!res.ok) throw new DriveError(res.status, `Drive list failed: ${res.status}`)
+  if (!res.ok)
+    throw new DriveError(res.status, `Drive list failed: ${res.status}`)
   return res.json()
 }
 

@@ -115,7 +115,7 @@ const EventCountdown = ({ displayItem, type = "fullscreen" }: Props) => {
               isFullscreen ? "text-base" : "text-sm"
             )}
           >
-            Upcoming / 予定
+            {countdownEnded ? "Happening now / 開催中" : "Upcoming / 予定"}
           </p>
           <h1
             className={cn(

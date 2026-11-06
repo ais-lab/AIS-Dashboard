@@ -1,20 +1,9 @@
-import { SiteConfig } from "@/types"
-
-import { env } from "@/env.mjs"
-
-export const siteConfig: SiteConfig = {
+export const siteConfig = {
   name: "AIS Board",
-  author: "AIS Lab",
-  description: "",
-  keywords: [],
-  url: {
-    base: env.NEXT_PUBLIC_APP_URL,
-    author: "ais-lab",
-  },
-  links: {
-    github: "https://github.com/ais-lab/AIS-Dashboard",
-    facebook: "",
-    messenger: "",
-  },
-  ogImage: "",
+  description:
+    "Display board for the AIS Lab main monitor, fed by a shared Google Drive folder.",
 }
+
+// Gets the access request emails and approves people. Keep in step with
+// DEFAULT_ADMIN_EMAIL in apps-script/Code.gs.
+export const BOARD_ADMIN_EMAIL = "ais.aislab@gmail.com"
