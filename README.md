@@ -36,16 +36,22 @@ this, `setup()` in step 3 fails with a "not found" error.
 ### 2. Create the Google sign-in client
 
 In [Google Cloud Console](https://console.cloud.google.com/), open the project
-that holds the board's Drive API key.
+that holds the board's Drive API key and go to **Google Auth Platform**. Older
+guides call this the OAuth consent screen.
 
-1. **APIs & Services → OAuth consent screen**. User type **External**, app name
-   `AIS Board`, your email as support and developer contact. Add no scopes.
-   Then **Publish app** so anyone can sign in. Only the basic email and profile
-   scopes are used, so Google does not need to review it.
-2. **APIs & Services → Credentials → Create credentials → OAuth client ID**.
-   Type **Web application**. Under **Authorized JavaScript origins** add
-   `https://ais-lab.github.io` and `http://localhost:3000`. Add no redirect URIs.
-3. Copy the **Client ID**. It ends in `.apps.googleusercontent.com`.
+1. If the overview page shows **Get started**, click it. App name `AIS Board`,
+   your email as the support email, audience **External**, your email as the
+   contact. Add no scopes.
+2. **Audience → Publish app**, so anyone with a Google account can sign in.
+   Only the basic email and profile scopes are used, so Google does not need to
+   review it.
+3. Under **Branding**, leave the logo empty. A logo needs Google's brand
+   verification. Without it, the sign-in screen shows the site's address
+   instead of the app name, which is fine.
+4. **Clients → Create client**. Type **Web application**. Under **Authorized
+   JavaScript origins** add `https://ais-lab.github.io` and
+   `http://localhost:3000`. Add no redirect URIs.
+5. Copy the **Client ID**. It ends in `.apps.googleusercontent.com`.
 
 ### 3. Deploy the upload service
 
@@ -79,6 +85,12 @@ that holds the board's Drive API key.
 3. When it finishes, open
    [`/upload`](https://ais-lab.github.io/AIS-Dashboard/upload/) and sign in as
    `ais.aislab@gmail.com`. You should see the upload form.
+4. Before telling the lab, try the member side with a second Google account:
+   - Request access, and check that the email reaches `ais.aislab@gmail.com`.
+   - Approve it in `/admin`, and check that the second account gets the
+     approval email.
+   - Post a test item, wait for it on the board (up to a minute), then delete
+     it on `/upload`.
 
 The `NEXT_PUBLIC_ENV`, `NEXT_PUBLIC_BASE_URL` and `NEXT_PUBLIC_APP_URL`
 variables are no longer used, so you can delete them.
