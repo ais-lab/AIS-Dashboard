@@ -30,8 +30,9 @@ says uploading isn't set up yet.
 ### 1. Get access to the Drive folder
 
 `ais.aislab@gmail.com` needs **Editor** access to the board's folder,
-`aisboard content`. Have the folder's owner share it with that account. Without
-this, `setup()` in step 3 fails with a "not found" error.
+`AIS Board`. It owns the current folder, so there is nothing to do unless the
+folder moves to another account; then have the new owner share it. Without
+access, `setup()` in step 3 fails with a "not found" error.
 
 ### 2. Create the Google sign-in client
 
@@ -42,12 +43,16 @@ guides call this the OAuth consent screen.
 1. If the overview page shows **Get started**, click it. App name `AIS Board`,
    your email as the support email, audience **External**, your email as the
    contact. Add no scopes.
-2. **Audience → Publish app**, so anyone with a Google account can sign in.
-   Only the basic email and profile scopes are used, so Google does not need to
-   review it.
-3. Under **Branding**, leave the logo empty. A logo needs Google's brand
+2. Under **Branding**, set **Application home page** to
+   `https://ais-lab.github.io/AIS-Dashboard/`, **Application privacy policy
+   link** to `https://ais-lab.github.io/AIS-Dashboard/privacy/`, and add
+   `ais-lab.github.io` under **Authorized domains**. Google won't publish the
+   app without these. Leave the logo empty: a logo needs Google's brand
    verification. Without it, the sign-in screen shows the site's address
    instead of the app name, which is fine.
+3. **Audience → Publish app**, so anyone with a Google account can sign in.
+   Only the basic email and profile scopes are used, so Google does not need to
+   review it.
 4. **Clients → Create client**. Type **Web application**. Under **Authorized
    JavaScript origins** add `https://ais-lab.github.io` and
    `http://localhost:3000`. Add no redirect URIs.
@@ -190,6 +195,7 @@ The dashboard fetches images and text/JSON directly from
 | `/upload`   | Sign in, request access, post and manage your items    |
 | `/tutorial` | Filename guide + interactive generator                 |
 | `/admin`    | Approve members, folder override (this browser), folder contents preview, setup checklist |
+| `/privacy`  | What signing in stores; linked from Google's sign-in screen |
 
 The dashboard's hover overlay (bottom-left) links to these pages.
 

@@ -32,6 +32,12 @@ export default function UploadPage() {
           </>
         )}
       </AccessGate>
+
+      <p className="mt-10 text-center text-xs text-muted-foreground">
+        <Link href="/privacy/" className="underline">
+          Privacy / プライバシー
+        </Link>
+      </p>
     </div>
   )
 }
