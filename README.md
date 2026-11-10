@@ -125,6 +125,8 @@ lab channel. The printable poster is [`docs/poster/poster.pdf`](docs/poster/post
 
 Each request arrives by email at `ais.aislab@gmail.com`, with links to both
 places you can answer it. Reply to the email to reach the person directly.
+[`docs/admin-guide.png`](docs/admin-guide.png) shows the steps in one picture,
+ready to send to a new admin.
 
 - **On the site:** open [`/admin`](https://ais-lab.github.io/AIS-Dashboard/admin/),
   sign in, and use **Approve** or **Decline** under "Who can post". This is also

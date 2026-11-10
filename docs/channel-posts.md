@@ -16,7 +16,7 @@ It takes about a minute. You don't need Drive access or special file names.
 2. First time only: click "Request access" and add a short note saying who you are. The request goes to ais.aislab@gmail.com, and you'll get an email once you're approved.
 3. Add an image, a short text or an event countdown, pick the dates, and post it.
 
-It shows up on the screen within a minute and comes down by itself after the last day. You can edit or remove your own posts on the same page.
+It shows up on the screen within a minute. If you set an end date it comes down by itself after that day; otherwise it stays until you remove it. You can edit or remove your own posts on the same page.
 
 Please don't post anything private: everything on the board can be read by anyone who has the link.
 
