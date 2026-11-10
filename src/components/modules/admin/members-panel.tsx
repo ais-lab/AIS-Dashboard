@@ -35,14 +35,7 @@ export const MembersPanel = () => {
         <CardTitle className="text-base">Who can post</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {!user && (
-          <>
-            <p className="text-sm text-muted-foreground">
-              Sign in as an admin to approve people who asked to post.
-            </p>
-            <GoogleSignInButton />
-          </>
-        )}
+        {!user && <GoogleSignInButton />}
         {user && isLoading && (
           <p className="text-sm text-muted-foreground">
             Checking your account…

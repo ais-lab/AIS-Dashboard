@@ -11,12 +11,7 @@ export default function UploadPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
       <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Post on the lab screen</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Add an image, a text slide or a countdown, and pick the dates.
-          </p>
-        </div>
+        <h1 className="text-3xl font-bold">Post on the lab screen</h1>
         <Link href="/">
           <Button variant="ghost" size="sm">
             Back to board

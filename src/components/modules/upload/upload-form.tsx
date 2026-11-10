@@ -107,7 +107,7 @@ export const UploadForm = () => {
                 data: await textToBase64(eventToJson(event)),
               }
       await upload.mutateAsync({ filename, ...payload })
-      toast.success("Posted. It will be on the screen within a minute.")
+      toast.success("Posted. It shows up within a minute.")
       reset()
     } catch (err) {
       toast.error((err as Error).message || "Upload failed")
@@ -157,7 +157,7 @@ export const UploadForm = () => {
             ) : (
               <>
                 <UploadCloud className="size-8" />
-                Drop an image here, or click to choose
+                Choose or drop an image
               </>
             )}
             <input
@@ -174,27 +174,18 @@ export const UploadForm = () => {
         <div className="space-y-1.5">
           <Label htmlFor="title">
             Title{" "}
-            <span className="text-muted-foreground">
-              (for your list, not shown on screen)
-            </span>
+            <span className="text-muted-foreground">(not shown on screen)</span>
           </Label>
           <Input
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder={
-              kind === "event" ? event.name || "untitled" : "untitled"
-            }
           />
         </div>
 
         <ScheduleFields value={schedule} onChange={setSchedule} />
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-          <p className="min-w-0 text-xs text-muted-foreground">
-            Saved in Drive as{" "}
-            <code className="break-all font-mono">{filename}</code>
-          </p>
+        <div className="flex justify-end border-t pt-4">
           <Button onClick={submit} isLoading={upload.isPending}>
             Post to the board
           </Button>

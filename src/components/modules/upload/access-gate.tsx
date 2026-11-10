@@ -11,6 +11,7 @@ import { BOARD_ADMIN_EMAIL } from "@/config/site"
 import { signOut, useGoogleAuth } from "@/lib/auth/google-auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { GoogleSignInButton } from "@/components/common/google-sign-in-button"
 import IosLoadingSpinner from "@/components/common/ios-loading-spinner"
@@ -61,12 +62,9 @@ export const AccessGate = ({
     return (
       <Panel title="Uploading isn't set up yet">
         <p className="text-sm text-muted-foreground">
-          Email <AdminEmail />, or add files straight to the Drive folder for
-          now (see the{" "}
           <Link href="/tutorial/" className="underline">
-            guide
+            Add files in Drive instead
           </Link>
-          ).
         </p>
       </Panel>
     )
@@ -75,10 +73,6 @@ export const AccessGate = ({
   if (!user) {
     return (
       <Panel title="Sign in to post on the board">
-        <p className="text-sm text-muted-foreground">
-          Use your Google account. The first time, you request access and the
-          board admin approves you.
-        </p>
         <div className="flex justify-center">
           <GoogleSignInButton />
         </div>
@@ -114,14 +108,13 @@ export const AccessGate = ({
         <Panel title="Request sent">
           <Clock className="mx-auto size-8 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
-            We emailed the board admin at <AdminEmail />. You&rsquo;ll get an
-            email when you can post.
+            You&rsquo;ll get an email once approved.
           </p>
         </Panel>
       ) : account.status === "rejected" ? (
         <Panel title="Your request was declined">
           <p className="text-sm text-muted-foreground">
-            Email <AdminEmail /> if you think this is a mistake.
+            <AdminEmail />
           </p>
         </Panel>
       ) : (
@@ -137,15 +130,15 @@ const RequestAccess = () => {
 
   return (
     <Panel title="Ask to post on the board">
-      <p className="text-sm text-muted-foreground">
-        Your request goes to <AdminEmail />. You only need to do this once.
-      </p>
-      <Textarea
-        className="mx-auto min-h-[80px] max-w-md"
-        placeholder="Optional: who you are, e.g. M1 student in the vision team"
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-      />
+      <div className="mx-auto max-w-md space-y-1.5 text-left">
+        <Label htmlFor="request-note">Note (optional)</Label>
+        <Textarea
+          id="request-note"
+          className="min-h-[80px]"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
+      </div>
       <Button
         isLoading={request.isPending}
         onClick={() =>

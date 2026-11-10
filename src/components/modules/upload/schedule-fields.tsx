@@ -130,9 +130,6 @@ export const ScheduleFields = ({
           )
         })}
       </div>
-      <p className="text-sm text-muted-foreground">
-        Shows {describeSchedule(value)}
-      </p>
     </div>
   )
 }

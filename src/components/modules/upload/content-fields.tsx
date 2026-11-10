@@ -59,11 +59,7 @@ export const TextFields = ({
       rows={7}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      placeholder={"# Lab meeting moved\nThursday 3pm, room 402"}
     />
-    <p className="text-xs text-muted-foreground">
-      Markdown works: # for a heading, **bold**, - for a list.
-    </p>
   </div>
 )
 
@@ -81,7 +77,6 @@ export const EventFields = ({
         id="event-name"
         value={value.name}
         onChange={(e) => onChange({ ...value, name: e.target.value })}
-        placeholder="SI 2026"
       />
     </div>
     <div className="space-y-1.5">
@@ -99,7 +94,6 @@ export const EventFields = ({
         id="event-place"
         value={value.address}
         onChange={(e) => onChange({ ...value, address: e.target.value })}
-        placeholder="Hiroshima, Japan"
       />
     </div>
     <div className="space-y-1.5 sm:col-span-2">
@@ -110,9 +104,5 @@ export const EventFields = ({
         onChange={(e) => onChange({ ...value, description: e.target.value })}
       />
     </div>
-    <p className="text-xs text-muted-foreground sm:col-span-2">
-      Shows a countdown at the top of the screen and disappears by itself after
-      the event day.
-    </p>
   </div>
 )
