@@ -97,9 +97,6 @@ guides call this the OAuth consent screen.
    - Post a test item, wait for it on the board (up to a minute), then delete
      it on `/upload`.
 
-The `NEXT_PUBLIC_ENV`, `NEXT_PUBLIC_BASE_URL` and `NEXT_PUBLIC_APP_URL`
-variables are no longer used, so you can delete them.
-
 ### 5. Set up the monitor
 
 Run this once on the computer behind the monitor. You need Google Chrome; on
