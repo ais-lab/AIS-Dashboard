@@ -99,8 +99,11 @@ guides call this the OAuth consent screen.
 
 ### 5. Set up the monitor
 
-Run this once on the computer behind the monitor. You need Google Chrome; on
-Windows, Edge works too. It opens the board full screen now and at every login.
+On the computer behind the monitor, open
+[`/setup`](https://ais-lab.github.io/AIS-Dashboard/setup/), copy the command
+for that system and run it. Nothing needs to be downloaded first. Or run it
+from here, once. You need Google Chrome; on Windows, Edge works too. It opens
+the board full screen now and at every login.
 
 macOS or Linux:
 
@@ -121,7 +124,9 @@ system, and how to quit or remove the kiosk.
 ### 6. Tell the lab
 
 Paste the posts from [`docs/channel-posts.md`](docs/channel-posts.md) into the
-lab channel. The printable poster is [`docs/poster/poster.pdf`](docs/poster/poster.pdf).
+lab channel. Attach [`docs/member-guide.png`](docs/member-guide.png) (screenshots
+of each step) to the post for members. The printable poster is
+[`docs/poster/poster.pdf`](docs/poster/poster.pdf).
 
 ### Approving people
 
@@ -193,6 +198,7 @@ The dashboard fetches images and text/JSON directly from
 | `/tutorial` | Filename guide + interactive generator                 |
 | `/admin`    | Approve members, folder override (this browser), folder contents preview, setup checklist |
 | `/privacy`  | What signing in stores; linked from Google's sign-in screen |
+| `/setup`    | Monitor setup: copy-and-run command for Windows, Mac or Linux |
 
 The dashboard's hover overlay (bottom-left) links to these pages.
 

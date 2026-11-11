@@ -346,34 +346,10 @@ export default function AdminPage() {
       <h2 className="mb-3 text-xl font-semibold">
         Start the board on the monitor / モニターでボードを自動起動する
       </h2>
-      <p className="mb-4 text-sm text-muted-foreground">
-        Run this once on the computer behind the monitor. It opens the board
-        full screen now and at every login. Then turn on automatic login, so the
-        board comes back by itself after a restart. /
-        モニターに接続されたPCで一度だけ実行してください。今すぐ、そして以後ログインのたびにボードが全画面で開きます。再起動後も自動で表示されるよう、自動ログインも有効にしてください。
-      </p>
-      <p className="mb-1 text-xs text-muted-foreground">macOS / Linux</p>
-      <code className="mb-3 block break-all rounded bg-muted px-3 py-2 font-mono text-xs">
-        curl -fsSL
-        https://raw.githubusercontent.com/ais-lab/AIS-Dashboard/main/kiosk/install.sh
-        | bash
-      </code>
-      <p className="mb-1 text-xs text-muted-foreground">Windows (PowerShell)</p>
-      <code className="mb-4 block break-all rounded bg-muted px-3 py-2 font-mono text-xs">
-        irm
-        https://raw.githubusercontent.com/ais-lab/AIS-Dashboard/main/kiosk/install.ps1
-        | iex
-      </code>
-      <p className="mb-10 text-sm text-muted-foreground">
-        How to quit, remove it, and more:{" "}
-        <a
-          href="https://github.com/ais-lab/AIS-Dashboard/tree/main/kiosk"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline"
-        >
-          kiosk guide / キオスクガイド
-        </a>
+      <p className="mb-10 text-sm">
+        <Link href="/setup/" className="underline">
+          Open the setup page on the monitor&rsquo;s computer / 設定ページを開く
+        </Link>
       </p>
 
       <h2 className="mb-3 text-xl font-semibold">Trust model / 信頼モデル</h2>

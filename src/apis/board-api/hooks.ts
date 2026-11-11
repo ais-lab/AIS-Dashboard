@@ -51,7 +51,8 @@ export const useItemContent = (id: string, enabled: boolean) =>
     staleTime: 0,
   })
 
-// After any change, refresh the item list and the board itself.
+// After any change, refresh the item list and the board itself. Cached file
+// contents are dropped, so reopening an editor never shows the old text.
 const useItemMutation = <TArgs>(action: string) => {
   const queryClient = useQueryClient()
   return useMutation({
@@ -60,6 +61,9 @@ const useItemMutation = <TArgs>(action: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: boardApiKeys.items() })
       queryClient.invalidateQueries({ queryKey: displayItemKeys.all() })
+      queryClient.removeQueries({
+        queryKey: [...boardApiKeys.all, "content"],
+      })
     },
   })
 }

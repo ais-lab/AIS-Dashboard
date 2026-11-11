@@ -45,19 +45,9 @@ The same page and spreadsheet are where you remove someone or make them an admin
 ```text
 AIS Board: setting up the monitor
 
-Run one command, once, on the computer connected to the monitor. It opens the board full screen right away and again at every login.
+On the computer connected to the monitor, open https://ais-lab.github.io/AIS-Dashboard/setup/, copy the command and run it once. Nothing to download first.
 
-macOS or Linux (Terminal):
+It opens the board full screen now and after every login. Then turn on automatic login (the page shows where), otherwise the board waits at the login screen after a restart.
 
-curl -fsSL https://raw.githubusercontent.com/ais-lab/AIS-Dashboard/main/kiosk/install.sh | bash
-
-Windows (PowerShell):
-
-irm https://raw.githubusercontent.com/ais-lab/AIS-Dashboard/main/kiosk/install.ps1 | iex
-
-You need Chrome (Edge is fine on Windows). Then turn on automatic login, otherwise the board waits at the login screen after a restart or power cut.
-
-To get out of full screen, press Cmd+Q on a Mac or Alt+F4 elsewhere. It comes back at the next login.
-
-Full guide, including how to remove it: https://github.com/ais-lab/AIS-Dashboard/tree/main/kiosk
+To close it, press Alt+F4 (Cmd+Q on a Mac). It comes back at the next login.
 ```

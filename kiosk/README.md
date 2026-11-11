@@ -7,6 +7,9 @@ You need Google Chrome (or Chromium). On Windows, Edge works too.
 
 ## Install
 
+Easiest: open https://ais-lab.github.io/AIS-Dashboard/setup/ on that computer,
+copy the command and run it. Or copy it from here.
+
 **macOS or Linux**, in Terminal:
 
 ```bash
