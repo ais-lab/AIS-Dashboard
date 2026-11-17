@@ -4,6 +4,7 @@ import type { EmblaCarouselType } from "embla-carousel"
 
 import { BaseDisplayItem, FolderItem } from "@/types/models"
 import { cn } from "@/lib/utils"
+import { advanceOnTimer, useStableItems } from "@/lib/utils/carousel-timer"
 import {
   Carousel,
   CarouselContent,
@@ -22,9 +23,10 @@ const DEFAULT_SECONDS = 30
 const Slideshow = ({ displayItems }: Props) => {
   const items = displayItems
   const [api, setApi] = useState<EmblaCarouselType | null>(null)
+  const { itemsKey, itemsRef } = useStableItems(items)
 
   useEffect(() => {
-    const urls = items
+    const urls = itemsRef.current
       .filter((i) => i.type === "image")
       .map((i) => driveImageUrl(i.id))
     const cache: HTMLImageElement[] = []
@@ -36,27 +38,12 @@ const Slideshow = ({ displayItems }: Props) => {
     return () => {
       cache.length = 0
     }
-  }, [items])
+  }, [itemsKey, itemsRef])
 
-  useEffect(() => {
-    if (!api || items.length === 0) return
-    let timeout: ReturnType<typeof setTimeout> | null = null
-
-    const schedule = () => {
-      if (timeout) clearTimeout(timeout)
-      const idx = api.selectedScrollSnap()
-      const current = items[idx]
-      const seconds = current?.displaySeconds ?? DEFAULT_SECONDS
-      timeout = setTimeout(() => api.scrollNext(), seconds * 1000)
-    }
-
-    schedule()
-    api.on("select", schedule)
-    return () => {
-      api.off("select", schedule)
-      if (timeout) clearTimeout(timeout)
-    }
-  }, [api, items])
+  useEffect(
+    () => advanceOnTimer(api, itemsRef, DEFAULT_SECONDS),
+    [api, itemsKey, itemsRef]
+  )
 
   return (
     <Carousel
