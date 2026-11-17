@@ -427,7 +427,7 @@ export default function GuidePage() {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">
             How to use the board / ボードの使い方
@@ -438,7 +438,7 @@ export default function GuidePage() {
             ラボのモニターは共有Driveフォルダの中身を表示します。ファイル名で表示期間が決まります。
           </p>
         </div>
-        <div className="flex shrink-0 gap-2">
+        <div className="flex shrink-0 flex-wrap gap-2">
           <Link href="/tour/">
             <Button variant="outline" size="sm">
               Tour / ツアー
@@ -473,7 +473,9 @@ export default function GuidePage() {
               が承認すると、アップロードして日付を選ぶだけで表示できます。
             </p>
             <Link href="/upload/">
-              <Button>Open the upload page / アップロードページへ</Button>
+              <Button className="h-auto min-h-10 whitespace-normal py-2 text-left">
+                Open the upload page / アップロードページへ
+              </Button>
             </Link>
           </CardContent>
         </Card>
@@ -496,7 +498,7 @@ export default function GuidePage() {
               {folderUrl && (
                 <div className="flex flex-wrap items-center gap-2">
                   <a href={folderUrl} target="_blank" rel="noopener noreferrer">
-                    <Button>
+                    <Button className="h-auto min-h-10 whitespace-normal py-2 text-left">
                       Open folder in Drive / Driveでフォルダを開く
                     </Button>
                   </a>

@@ -1,3 +1,5 @@
+import { useId } from "react"
+
 import dayjsConfig from "@/config/dayjs"
 import { cn } from "@/lib/utils"
 import {
@@ -73,6 +75,8 @@ export const ScheduleFields = ({
   value: Schedule
   onChange: (next: Schedule) => void
 }) => {
+  // Unique per instance: an open editor repeats these fields under the form.
+  const id = useId()
   const chip = (active: boolean) =>
     cn(
       "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
@@ -85,9 +89,9 @@ export const ScheduleFields = ({
     <div className="space-y-3">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="show-from">Show from</Label>
+          <Label htmlFor={`${id}-from`}>Show from</Label>
           <Input
-            id="show-from"
+            id={`${id}-from`}
             type="date"
             value={value.from}
             onChange={(e) =>
@@ -96,9 +100,9 @@ export const ScheduleFields = ({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="show-until">Until (last day)</Label>
+          <Label htmlFor={`${id}-until`}>Until (last day)</Label>
           <Input
-            id="show-until"
+            id={`${id}-until`}
             type="date"
             min={value.from}
             value={value.until ?? ""}

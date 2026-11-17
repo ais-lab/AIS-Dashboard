@@ -1,3 +1,5 @@
+import { useId } from "react"
+
 import { CountdownEvent } from "@/types/models"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -45,23 +47,29 @@ export const eventFromJson = (json: string): EventDraft => {
   }
 }
 
+// The upload form and an open editor can show these fields at the same time,
+// so each instance gets its own ids for the labels to point at.
+
 export const TextFields = ({
   value,
   onChange,
 }: {
   value: string
   onChange: (next: string) => void
-}) => (
-  <div className="space-y-1.5">
-    <Label htmlFor="slide-text">Slide text</Label>
-    <Textarea
-      id="slide-text"
-      rows={7}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    />
-  </div>
-)
+}) => {
+  const id = useId()
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={`${id}-text`}>Slide text</Label>
+      <Textarea
+        id={`${id}-text`}
+        rows={7}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </div>
+  )
+}
 
 export const EventFields = ({
   value,
@@ -69,40 +77,43 @@ export const EventFields = ({
 }: {
   value: EventDraft
   onChange: (next: EventDraft) => void
-}) => (
-  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-    <div className="space-y-1.5 sm:col-span-2">
-      <Label htmlFor="event-name">Event name</Label>
-      <Input
-        id="event-name"
-        value={value.name}
-        onChange={(e) => onChange({ ...value, name: e.target.value })}
-      />
+}) => {
+  const id = useId()
+  return (
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="space-y-1.5 sm:col-span-2">
+        <Label htmlFor={`${id}-name`}>Event name</Label>
+        <Input
+          id={`${id}-name`}
+          value={value.name}
+          onChange={(e) => onChange({ ...value, name: e.target.value })}
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor={`${id}-date`}>Date and time</Label>
+        <Input
+          id={`${id}-date`}
+          type="datetime-local"
+          value={value.date}
+          onChange={(e) => onChange({ ...value, date: e.target.value })}
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor={`${id}-place`}>Place (optional)</Label>
+        <Input
+          id={`${id}-place`}
+          value={value.address}
+          onChange={(e) => onChange({ ...value, address: e.target.value })}
+        />
+      </div>
+      <div className="space-y-1.5 sm:col-span-2">
+        <Label htmlFor={`${id}-description`}>Description (optional)</Label>
+        <Input
+          id={`${id}-description`}
+          value={value.description}
+          onChange={(e) => onChange({ ...value, description: e.target.value })}
+        />
+      </div>
     </div>
-    <div className="space-y-1.5">
-      <Label htmlFor="event-date">Date and time</Label>
-      <Input
-        id="event-date"
-        type="datetime-local"
-        value={value.date}
-        onChange={(e) => onChange({ ...value, date: e.target.value })}
-      />
-    </div>
-    <div className="space-y-1.5">
-      <Label htmlFor="event-place">Place (optional)</Label>
-      <Input
-        id="event-place"
-        value={value.address}
-        onChange={(e) => onChange({ ...value, address: e.target.value })}
-      />
-    </div>
-    <div className="space-y-1.5 sm:col-span-2">
-      <Label htmlFor="event-description">Description (optional)</Label>
-      <Input
-        id="event-description"
-        value={value.description}
-        onChange={(e) => onChange({ ...value, description: e.target.value })}
-      />
-    </div>
-  </div>
-)
+  )
+}
